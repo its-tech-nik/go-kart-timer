@@ -69,12 +69,12 @@ const useAlphaTimerWebsocket = (competitorName: string) => {
     useEffect(() => {
         if (!lastJsonMessage) return
 
-        if (!lastJsonMessage?.data) return
+        if (!(lastJsonMessage as any)?.data) return
 
         try {
             // const asdf = JSON.parse(lastJsonMessage.data)
             // console.log('last', lastJsonMessage)
-            const compData = JSON.parse(lastJsonMessage.data)
+            const compData = JSON.parse((lastJsonMessage as any).data)
     
             // console.log(compData)
 
