@@ -1,7 +1,7 @@
 /* eslint-disable react/no-unescaped-entities */
 'use client';
 
-import { experimental_useEffectEvent, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 
 // import { useSearchParams } from "next/navigation";
