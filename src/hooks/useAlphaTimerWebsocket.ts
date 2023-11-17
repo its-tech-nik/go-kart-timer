@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import useWebSocket from 'react-use-websocket';
 
 const useAlphaTimerWebsocket = (competitorName: string) => {
