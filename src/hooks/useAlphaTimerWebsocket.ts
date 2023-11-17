@@ -1,13 +1,13 @@
-import React, { useEffect, useInsertionEffect, useRef, useState } from 'react'
-import useWebSocket, { ReadyState } from 'react-use-websocket';
+import React, { useEffect, useRef, useState } from 'react'
+import useWebSocket from 'react-use-websocket';
 
 const useAlphaTimerWebsocket = (competitorName: string) => {
-    const { sendJsonMessage, lastJsonMessage, getWebSocket } = useWebSocket('wss://ws-eu.pusher.com/app/3aaffebc8193ea83cb2f?protocol=7&client=js&version=3.1.0&flash=false')
+    const { sendJsonMessage, lastMessage, lastJsonMessage, getWebSocket } = useWebSocket('ws://localhost:443')
+    // const { sendJsonMessage, lastJsonMessage, getWebSocket } = useWebSocket('wss://ws-eu.pusher.com/app/3aaffebc8193ea83cb2f?protocol=7&client=js&version=3.1.0&flash=false')
 
     const [driver, setDriver] = useState({
         id: null,
         name: null,
-        sessionId: null,
         lastLapTime: "00.000",
         front: 0,
         back: 0,
@@ -38,13 +38,15 @@ const useAlphaTimerWebsocket = (competitorName: string) => {
         position: 0,
     })
 
+    const lastRecordedSequenceNumber = useRef<number>(316)
+    const lastRecordedLapNumber = useRef<number>(0)
+
     const startMessaging = (competitor: any) => {
         console.log(competitor)
         setDriver({
             ...driver,
             id: competitor['CompetitorId'],
             name: competitor['CompetitorName'],
-            // sessionId: compData['SessionId']
         })
 
         sendJsonMessage({
@@ -66,81 +68,92 @@ const useAlphaTimerWebsocket = (competitorName: string) => {
         }
     }, [])
 
+    const testForNoMissingPackets = (sequence: number) => {
+        if (sequence === 1) lastRecordedSequenceNumber.current = 1
+
+        return sequence !== lastRecordedSequenceNumber.current++
+    }
+
+    const testForNoMissingLaps = (lap: number) => {
+        if (lap === 1) lastRecordedLapNumber.current = 1
+
+        return lap !== lastRecordedLapNumber.current++
+    }
+
     useEffect(() => {
-        if (!lastJsonMessage) return
 
-        if (!(lastJsonMessage as any)?.data) return
+        const sd = null
 
-        try {
-            // const asdf = JSON.parse(lastJsonMessage.data)
-            // console.log('last', lastJsonMessage)
-            const compData = JSON.parse((lastJsonMessage as any).data)
-    
-            // console.log(compData)
+        if (lastJsonMessage) {
+            const { data, event } = lastJsonMessage as any
 
-            if (compData['State'] === 'Ended') getWebSocket()?.close()
+            if ((event === 'update' || event === 'new_session' || event === 'updated_session') && data) {
+                const dataJson = JSON.parse(data)
 
-            if (compData['Competitors']?.length) {
-                console.log('competitor.length', driver)
-                const competitors = compData['Competitors']
+                if (event === 'new_session') console.log('NEW SESSION')
+                else if (event === 'updated_session') console.log('UPDATED SESSION')
+        
+                if (dataJson['Sequence'] && testForNoMissingPackets(dataJson['Sequence'])) throw new Error(`Missing Packet: ${dataJson['Sequence']}`)
+            
+                if (dataJson['Competitors']) {
+                    const competitors = dataJson['Competitors']
 
-                for (let i=0; i < competitors.length; i++) {
-                    const competitor = competitors[i]
-                    if (competitor['CompetitorId'] === 72165) console.log({competitor})
+                    for (let i=0; i < competitors.length; i++) {
+                        // show data for the session selected (10m or 20m) or show all if class is not selected
+                        if (dataJson['SD'] !== sd && sd) continue
 
-                    if (competitor['Laps'] && competitor['Laps'][0]['Position'] === driver.position + 1) {
-                        setDriver({
-                            ...driver,
-                            back: competitor['Laps'][0]['Gap'],
-                        })
-                    }
-    
-                    if (competitor['CompetitorName'] && competitor['CompetitorName'] === competitorName) {
+                        const competitor = competitors[i]
 
-                        setDriver({
-                            ...driver,
-                            id: competitor['CompetitorId'],
-                            name: competitor['CompetitorName'],
-                            sessionId: compData['SessionId']
-                        })
-                        console.log('new_driver', driver)
-                    } else if (!driver.sessionId) {
-                        console.log('asdf')
-                        setDriver({
-                            ...driver,
-                            sessionId: compData['SessionId']
-                        })
-                    }
-                    else if (!competitor['CompetitorName'] && competitor['el'] && competitor['CompetitorId'] === driver.id && compData['SessionId'] === driver.sessionId) {
-                        const lap = competitor['Laps'][0]
+                        // Grab the competitorId associated with the CompetitorName
+                        if (competitor['CompetitorName'] && competitor['CompetitorName'] === competitorName) {
+                            setDriver({...driver, id: competitor['CompetitorId']})
+                        }
 
-                        console.log(lap)
+                        if (competitor['Laps'] && competitor['Laps'][0]['Position'] === driver.position + 1) {
+                            setDriver({
+                                ...driver,
+                                back: competitor['Laps'][0]['Gap'] || driver.back,
+                            })
+                        }
 
-                        setDriver({
-                            ...driver,
-                            front: lap['Gap'],
-                            previousBestLaps: lap['LapTime'] < driver.previousBestLaps[2].time.value ? [
-                                driver.previousBestLaps[0],
-                                driver.previousBestLaps[1],
-                                {
-                                    time: {
-                                        value: lap['LapTime'],
-                                        display: (lap['LapTime'] / 1000).toFixed(3),
-                                    },
-                                    lap: competitor['NumberOfLaps'],
-                                }
-                            ].sort((a, b) => a.time.value - b.time.value) : driver.previousBestLaps,
-                            lastLapTime: (lap['LapTime'] / 1000).toFixed(3),
-                            position: lap['Position'],
-                            currentLap: lap['LapNumber'],
-                        })
+                        // show data only for selected competitor using its ID
+                        if (competitor['CompetitorId'] === driver.id) {
+
+                            console.log('qwer', competitor['CompetitorId'], driver.id)
+
+                            if (competitor['NumberOfLaps'] && testForNoMissingLaps(competitor['NumberOfLaps'])) throw new Error(`Missing Lap: ${competitor['NumberOfLaps']}`)
+                            
+                            if (competitor['Laps']) {
+                                const lap = competitor['Laps'][0]
+
+                                setDriver({
+                                    ...driver,
+                                    front: lap['Gap'] || driver.front,
+                                    currentLap: lap['LapNumber'] || driver.currentLap,
+                                    position: lap['Position'] || driver.position,
+                                    lastLapTime: lap['LapTime'] ? (lap['LapTime'] / 1000).toFixed(3) : driver.lastLapTime,
+                                    previousBestLaps: lap['LapTime'] && lap['LapTime'] < driver.previousBestLaps[2].time.value ? [
+                                        driver.previousBestLaps[0],
+                                        driver.previousBestLaps[1],
+                                        {
+                                            time: {
+                                                value: lap['LapTime'],
+                                                display: (lap['LapTime'] / 1000).toFixed(3),
+                                            },
+                                            lap: competitor['NumberOfLaps'],
+                                        }
+                                    ].sort((a, b) => a.time.value - b.time.value) : driver.previousBestLaps,
+                                })
+                                // console.log(dataJson)
+                                console.log('Laps', JSON.stringify(competitor['Laps']))
+                            }
+                        }
                     }
                 }
-            }
 
-        } catch (err) {
-            console.log(err)
+            }
         }
+
     }, [lastJsonMessage])
 
     return {
