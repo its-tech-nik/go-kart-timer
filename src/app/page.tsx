@@ -1,11 +1,6 @@
-/* eslint-disable react/no-unescaped-entities */
 'use client';
 
-import { useEffect, useRef, useState } from "react";
-
-
-// import { useSearchParams } from "next/navigation";
-
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 import NoSleep from 'nosleep.js';
 import { useSearchParams } from "next/navigation";
 import useAlphaTimerWebsocket from "@/hooks/useAlphaTimerWebsocket";
@@ -13,16 +8,38 @@ import clsx from "clsx";
 
 export default function Home() {
   const [queryParameters] = useSearchParams()
-  const [driverName, setDriverName] = useState('')
+  const [driverName, setDriverName] = useState<string>('')
+  const { startMessaging, result: {lastLapTime, position, previousBestLaps, front, back, currentLap} } = useAlphaTimerWebsocket(queryParameters?.[1] || driverName)
   const [ isFullScreen, setIsFullScreen] = useState<Boolean>(false)
-  const keepScreenOn = useRef<NoSleep>()
-  const { startMessaging, result: {lastLapTime, position, previousBestLaps, front, back, currentLap} } = useAlphaTimerWebsocket(queryParameters?.[1] || '')
-  const [bestLap, setBestLap] = useState(0)
-  const [newBest, setNewBest] = useState(false)
-  const audio = useRef<any>(null)
+  const [bestLap, setBestLap] = useState<number>(0)
+  const [newBest, setNewBest] = useState<boolean>(false)
   const [competitors, setCompetitors] = useState([])
+  const audio = useRef<HTMLAudioElement>(null)
+  const keepScreenOn = useRef<NoSleep>()
+
+  const getCompetitionInformation = () => {
+
+    fetch('https://live.alphatiming.co.uk/qleisure.json')
+    .then(async (results) => {
+      const raceSetup = await results.json()
+
+      if (queryParameters && queryParameters[0] === 'driver_name') {
+        const competitor = raceSetup['Competitors'].find((competitor: any) => competitor['CompetitorName'] === queryParameters[1])
+
+        if (competitor) startMessaging(competitor)
+      }
+
+      setCompetitors(raceSetup['Competitors'])
+    })
+  }
 
   useEffect(() => {
+    if (queryParameters && queryParameters[0] === 'driver_name') {
+      setDriverName(queryParameters[1])
+    }
+
+    getCompetitionInformation()
+
     document.addEventListener('fullscreenchange', () => {
       setIsFullScreen(Boolean(document.fullscreenElement))
 
@@ -38,24 +55,7 @@ export default function Home() {
     })
 
     const mainElement = document.querySelector('main')
-    mainElement?.addEventListener('transitionend', () => {
-      setNewBest(false)
-    })
-
-    if (!queryParameters || queryParameters[0] !== 'driver_name') {
-      fetch('https://live.alphatiming.co.uk/qleisure.json')
-      .then(async (results) => {
-        const raceSetup = await results.json()
-
-        setCompetitors(raceSetup['Competitors'])
-        // setDriverName(raceSetup['Competitors'][0]['CompetitorName'])
-
-        console.log(raceSetup['Competitors'])
-
-      })
-    } else if (queryParameters && queryParameters[0] === 'driver_name') {
-      setDriverName(queryParameters[1])
-    }
+    mainElement?.addEventListener('transitionend', () => setNewBest(false))
   }, [])
 
   useEffect(() => {
@@ -66,12 +66,14 @@ export default function Home() {
     }
   }, [previousBestLaps])
 
-  const asdf = (event: any) => {
-    const competitor = competitors.find(competitor => competitor['CompetitorId'] === parseInt(event.target.value))
-
-    setDriverName(competitor?.['CompetitorName'] || '')
+  const competitorSelected = (event: ChangeEvent<HTMLSelectElement>) => {
+    const competitor = competitors.find(competitor => competitor['CompetitorId'] === parseInt(event.target?.value))
 
     startMessaging(competitor)
+
+    history.pushState({}, '', `?driver_name=${competitor?.['CompetitorName']}`)
+
+    setDriverName(competitor?.['CompetitorName'] || '')
   }
 
   const clearDriverName = () => setDriverName('')
@@ -87,7 +89,7 @@ export default function Home() {
         <div>
           <span>Driver's Name: </span>
           { driverName ? <span onClick={clearDriverName} className="pe-3">{driverName}</span> : (
-            <select onChange={asdf}>
+            <select onChange={competitorSelected}>
               {competitors.map((competitor, index) => {
                 return (
                   <option key={index} value={competitor['CompetitorId']}>{competitor['CompetitorName']}</option>
