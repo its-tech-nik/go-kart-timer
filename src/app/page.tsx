@@ -6,6 +6,7 @@ import NoSleep from 'nosleep.js';
 import { useSearchParams } from "next/navigation";
 import useAlphaTimerWebsocket from "@/hooks/useAlphaTimerWebsocket";
 import clsx from "clsx";
+import { formatTime } from "@/utils/formatTime";
 
 export default function Home() {
   const [queryParameters] = useSearchParams()
@@ -102,7 +103,7 @@ export default function Home() {
         </div>
       </div>
       <div className="flex justify-center">
-        <span className="text-9xl">{ lastLapTime }</span>
+        <span className="text-9xl">{ formatTime(lastLapTime) }</span>
       </div>
       <div className="flex grow mt-3">
         <div className="previous-laps basis-3/4">
@@ -110,11 +111,11 @@ export default function Home() {
           <div className="flex flex-col items-center">
             { previousBestLaps.map(({ time, lap }: any, index: number) => {
 
-              if (time.value === Infinity) return
+              if (time === Infinity) return
 
               return (
                 <div className="flex" key={`${index}-${time}`}>
-                  <span className="text-5xl">{ time.display }</span>
+                  <span className="text-5xl">{ formatTime(time) }</span>
                   <div className="pl-3 self-end">
                     <span>L{ lap }</span>
                   </div>

@@ -8,30 +8,21 @@ const useAlphaTimerWebsocket = (competitorName: string) => {
     const [driver, setDriver] = useState({
         id: null,
         name: null,
-        lastLapTime: "00.000",
+        lastLapTime: 0,
         front: 0,
         back: 0,
         currentLap: 0,
         previousBestLaps: [
             {
-                time: {
-                    value: Infinity,
-                    display: "00.000",
-                },
+                time: Infinity,
                 lap: 0,
             },
             {
-                time: {
-                    value: Infinity,
-                    display: "00.000",
-                },
+                time: Infinity,
                 lap: 0,
             },
             {
-                time: {
-                    value: Infinity,
-                    display: "00.000",
-                },
+                time: Infinity,
                 lap: 0,
             },
         ] as any,
@@ -120,18 +111,15 @@ const useAlphaTimerWebsocket = (competitorName: string) => {
                                     front: lap['Gap'] || driver.front,
                                     currentLap: lap['LapNumber'] || driver.currentLap,
                                     position: lap['Position'] || driver.position,
-                                    lastLapTime: lap['LapTime'] ? (lap['LapTime'] / 1000).toFixed(3) : driver.lastLapTime,
-                                    previousBestLaps: lap['LapTime'] && lap['LapTime'] < driver.previousBestLaps[2].time.value ? [
+                                    lastLapTime: lap['LapTime'] ? lap['LapTime'] : driver.lastLapTime,
+                                    previousBestLaps: lap['LapTime'] && lap['LapTime'] < driver.previousBestLaps[2].time ? [
                                         driver.previousBestLaps[0],
                                         driver.previousBestLaps[1],
                                         {
-                                            time: {
-                                                value: lap['LapTime'],
-                                                display: (lap['LapTime'] / 1000).toFixed(3),
-                                            },
+                                            time: lap['LapTime'],
                                             lap: competitor['NumberOfLaps'],
                                         }
-                                    ].sort((a, b) => a.time.value - b.time.value) : driver.previousBestLaps,
+                                    ].sort((a, b) => a.time - b.time) : driver.previousBestLaps,
                                 })
                             }
                         }
