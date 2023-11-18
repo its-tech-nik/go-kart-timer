@@ -89,8 +89,9 @@ export default function Home() {
         {!isFullScreen && <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={() => document.documentElement.requestFullscreen()}>Fullscreen</button>}
         <div>
           <span>Driver's Name: </span>
-          { driverName ? <span onClick={clearDriverName} className="pe-3">{driverName}</span> : (
-            <select onChange={competitorSelected}>
+          { driverName ? <span onClick={clearDriverName} className="pe-3">{ driverName }</span> : (
+            <select onChange={competitorSelected} className="bg-green-600">
+              <option value="">Select Driver</option>
               {competitors.map((competitor, index) => {
                 return (
                   <option key={index} value={competitor['CompetitorId']}>{competitor['CompetitorName']}</option>
