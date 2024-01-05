@@ -14,6 +14,7 @@
     "nosleep.js": "^0.12.0",
     "react": "^18",
     "react-dom": "^18",
+    "react-use-precision-timer": "^3.4.5",
     "react-use-websocket": "^4.5.0",
     "use-sound": "^4.0.1"
   },

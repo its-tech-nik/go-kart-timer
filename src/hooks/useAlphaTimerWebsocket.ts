@@ -2,39 +2,39 @@ import { useEffect, useRef, useState } from 'react'
 import useWebSocket from 'react-use-websocket';
 
 const useAlphaTimerWebsocket = (competitorName: string) => {
-    // const { sendJsonMessage, lastJsonMessage } = useWebSocket('ws://localhost:443')
-    const { sendJsonMessage, lastJsonMessage, getWebSocket } = useWebSocket('wss://ws-eu.pusher.com/app/3aaffebc8193ea83cb2f?protocol=7&client=js&version=3.1.0&flash=false')
+    const { sendJsonMessage, lastJsonMessage } = useWebSocket('ws://localhost:443')
+    // const { sendJsonMessage, lastJsonMessage, getWebSocket } = useWebSocket('wss://ws-eu.pusher.com/app/3aaffebc8193ea83cb2f?protocol=7&client=js&version=3.1.0&flash=false')
 
-    const [driver, setDriver] = useState({
+    const [driverDetails, setDriverDetails] = useState({
         id: null,
         name: null,
-        lastLapTime: 0,
-        front: 0,
-        back: 0,
-        currentLap: 0,
-        previousBestLaps: [
-            {
-                time: Infinity,
-                lap: 0,
-            },
-            {
-                time: Infinity,
-                lap: 0,
-            },
-            {
-                time: Infinity,
-                lap: 0,
-            },
-        ] as any,
-        position: 0,
     })
+
+    const [position, setPosition] = useState<number>(0)
+    const [lastLapTime, setLastLapTime] = useState<number>(0)
+    const [gap, setGap] = useState<number>(0)
+    const [currentLapNumber, setCurrentLapNumber] = useState<number>(0)
+    const [bestOverallLaptime, setBestOverallLaptime] = useState<number>(Infinity)
+    const [previousBestLaps, setPreviousBestLaps] = useState([
+        {
+            time: Infinity,
+            lap: 0,
+        },
+        {
+            time: Infinity,
+            lap: 0,
+        },
+        {
+            time: Infinity,
+            lap: 0,
+        },
+    ])
 
     const lastRecordedSequenceNumber = useRef<number>(-1)
     const lastRecordedLapNumber = useRef<number>(-1)
 
     const startMessaging = (competitor: any) => {
-        setDriver({
-            ...driver,
+        setDriverDetails({
             id: competitor['CompetitorId'],
             name: competitor['CompetitorName'],
         })
@@ -54,6 +54,10 @@ const useAlphaTimerWebsocket = (competitorName: string) => {
         return sequence !== lastRecordedSequenceNumber.current++
     }
 
+    const reInitWebsocketConnection = () => {
+        console.log(driverDetails)
+    }
+
     const testForNoMissingLaps = (lap: number) => {
         if (lap === 1) lastRecordedLapNumber.current = 1
 
@@ -64,7 +68,6 @@ const useAlphaTimerWebsocket = (competitorName: string) => {
     }
 
     useEffect(() => {
-
         const sd = null
 
         if (lastJsonMessage) {
@@ -73,7 +76,27 @@ const useAlphaTimerWebsocket = (competitorName: string) => {
             if ((event === 'update' || event === 'new_session' || event === 'updated_session') && data) {
                 const dataJson = JSON.parse(data)
 
-                if (event === 'new_session') console.log('NEW SESSION')
+                if (event === 'new_session') {
+                    setPosition(0)
+                    setLastLapTime(0)
+                    setGap(0)
+                    setCurrentLapNumber(0)
+                    setBestOverallLaptime(Infinity)
+                    setPreviousBestLaps([
+                        {
+                            time: Infinity,
+                            lap: 0,
+                        },
+                        {
+                            time: Infinity,
+                            lap: 0,
+                        },
+                        {
+                            time: Infinity,
+                            lap: 0,
+                        },
+                    ])
+                }
                 else if (event === 'updated_session') console.log('UPDATED SESSION')
         
                 if (dataJson['Sequence'] && testForNoMissingPackets(dataJson['Sequence'])) throw new Error(`Missing Packet: ${dataJson['Sequence']}`)
@@ -87,40 +110,41 @@ const useAlphaTimerWebsocket = (competitorName: string) => {
 
                         const competitor = competitors[i]
 
-                        if (competitor['Laps'] && competitor['Laps'][0]['Position'] === driver.position + 1) {
-                            setDriver({
-                                ...driver,
-                                back: competitor['Laps'][0]['Gap'] || driver.back,
-                            })
-                        }
+                        if (competitor['BestLaptime'] && competitor['BestLaptime'] < bestOverallLaptime) setBestOverallLaptime(competitor['BestLaptime'])
 
                         // Grab the competitorId associated with the CompetitorName
-                        if (competitor['CompetitorName'] && competitor['CompetitorName'] === competitorName) {
-                            setDriver({...driver, id: competitor['CompetitorId']})
-                        }
+                        // TODO: Test if we need that?
+                        // if (competitor['CompetitorName'] && competitor['CompetitorName'] === competitorName) {
+                        //     setDriverDetails({...driverDetails, id: competitor['CompetitorId']})
+                        // }
                         // show data only for selected competitor using its ID
-                        if (competitor['CompetitorId'] === driver.id) {
+                        if (competitor['CompetitorId'] === driverDetails.id) {
 
                             if (competitor['NumberOfLaps'] && testForNoMissingLaps(competitor['NumberOfLaps'])) throw new Error(`Missing Lap: ${competitor['NumberOfLaps']}`)
                             
                             if (competitor['Laps']) {
                                 const lap = competitor['Laps'][0]
 
-                                setDriver({
-                                    ...driver,
-                                    front: lap['Gap'] || driver.front,
-                                    currentLap: lap['LapNumber'] || driver.currentLap,
-                                    position: lap['Position'] || driver.position,
-                                    lastLapTime: lap['LapTime'] ? lap['LapTime'] : driver.lastLapTime,
-                                    previousBestLaps: lap['LapTime'] && lap['LapTime'] < driver.previousBestLaps[2].time ? [
-                                        driver.previousBestLaps[0],
-                                        driver.previousBestLaps[1],
-                                        {
-                                            time: lap['LapTime'],
-                                            lap: competitor['NumberOfLaps'],
-                                        }
-                                    ].sort((a, b) => a.time - b.time) : driver.previousBestLaps,
-                                })
+                                if (lap['Position']) setPosition(lap['Position'])
+
+                                if (lap['LapTime']) {
+                                    setLastLapTime(lap['LapTime'])
+
+                                    if (lap['LapTime'] && lap['LapTime'] < previousBestLaps[2].time) {
+                                        setPreviousBestLaps([
+                                            previousBestLaps[0],
+                                            previousBestLaps[1],
+                                            {
+                                                time: lap['LapTime'],
+                                                lap: competitor['NumberOfLaps'],
+                                            }
+                                        ].sort((a, b) => a.time - b.time))
+                                    }
+                                }
+
+                                if(lap['Gap']) setGap(lap['Gap'])
+
+                                if(lap['LapNumber']) setCurrentLapNumber(lap['LapNumber'])
                             }
                         }
                     }
@@ -132,7 +156,16 @@ const useAlphaTimerWebsocket = (competitorName: string) => {
 
     return {
         startMessaging,
-        result: driver
+        reInitWebsocketConnection,
+        result: {
+            ...driverDetails,
+            position,
+            lastLapTime,
+            gap,
+            currentLapNumber,
+            bestOverallLaptime,
+            previousBestLaps,
+        }
     }
 }
 

@@ -1,23 +1,37 @@
 /* eslint-disable react/no-unescaped-entities */
 'use client';
 
-import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState, useCallback } from "react";
 import NoSleep from 'nosleep.js';
 import { useSearchParams } from "next/navigation";
 import useAlphaTimerWebsocket from "@/hooks/useAlphaTimerWebsocket";
 import clsx from "clsx";
 import { formatTime } from "@/utils/formatTime";
+import { useTimer } from 'react-use-precision-timer';
 
 export default function Home() {
   const [queryParameters] = useSearchParams()
   const [driverName, setDriverName] = useState<string>('')
-  const { startMessaging, result: {lastLapTime, position, previousBestLaps, front, back, currentLap} } = useAlphaTimerWebsocket(queryParameters?.[1] || driverName)
+  const { startMessaging, reInitWebsocketConnection, result: {lastLapTime, position, previousBestLaps, gap, bestOverallLaptime, currentLapNumber} } = useAlphaTimerWebsocket(queryParameters?.[1] || driverName)
   const [ isFullScreen, setIsFullScreen] = useState<Boolean>(false)
   const [bestLap, setBestLap] = useState<number>(0)
   const [newBest, setNewBest] = useState<boolean>(false)
   const [competitors, setCompetitors] = useState([])
   const audio = useRef<HTMLAudioElement>(null)
   const keepScreenOn = useRef<NoSleep>()
+  const [time, setTime] = useState<number>(0)
+
+  // The callback will be called every 1000 milliseconds.
+  const timer = useTimer({ delay: 10 }, () => {
+    const timePassed = timer.getElapsedResumedTime()
+    if (timePassed > 10 * 1000) {
+      // console.log(competitors)
+      reInitWebsocketConnection()
+      timer.start()
+    }
+
+    setTime(timePassed)
+  });
 
   const getCompetitionInformation = () => {
 
@@ -31,9 +45,14 @@ export default function Home() {
         if (competitor) startMessaging(competitor)
       }
 
+      console.log(raceSetup['Competitors'])
       setCompetitors(raceSetup['Competitors'])
     })
   }
+
+  useEffect(() => {
+    timer.start();
+  }, [lastLapTime])
 
   useEffect(() => {
     if (queryParameters && queryParameters[0] === 'driver_name') {
@@ -58,6 +77,8 @@ export default function Home() {
 
     const mainElement = document.querySelector('main')
     mainElement?.addEventListener('transitionend', () => setNewBest(false))
+
+    timer.start()
   }, [])
 
   useEffect(() => {
@@ -102,19 +123,19 @@ export default function Home() {
           )}
         </div>
       </div>
-      <div className="flex justify-center">
-        <span className="text-9xl">{ formatTime(lastLapTime) }</span>
+      <div className="flex justify-center font-mono">
+        <span className="text-9xl">{ time < 5000 && lastLapTime !== 0 ? formatTime(lastLapTime) : formatTime(time) }</span>
       </div>
       <div className="flex grow mt-3">
         <div className="previous-laps basis-3/4">
-          <span className="pl-9">Previous Laps:</span>
+          <span className="pl-9">Best Laps:</span>
           <div className="flex flex-col items-center">
             { previousBestLaps.map(({ time, lap }: any, index: number) => {
 
               if (time === Infinity) return
 
               return (
-                <div className="flex" key={`${index}-${time}`}>
+                <div className="flex font-mono" key={`${index}-${time}`}>
                   <span className="text-5xl">{ formatTime(time) }</span>
                   <div className="pl-3 self-end">
                     <span>L{ lap }</span>
@@ -124,20 +145,22 @@ export default function Home() {
             })}
           </div>
         </div>
-        <div className="stats flex basis-1/4 flex-col items-center">
-          <div className="flex items-start grow">
-            <span className="mt-2.5 text-5xl">L</span>
-            <span className="text-6xl">{ currentLap }</span>
+        <div className="stats flex basis-1/4 flex-col items-center font-mono">
+          <div className="font-bold grow text-3xl">
+            <span>Gap: { gap }</span>
           </div>
-          <div className="font-bold">
-            <span>Front: { front }</span>
+          <div className="font-bold grow text-3xl">
+            <span>BOL: { formatTime(bestOverallLaptime !== Infinity ? bestOverallLaptime : 0) }</span>
           </div>
-          <div className="font-bold">
-            <span>Back: { back }</span>
-          </div>
-          <div className="flex items-end grow">
-            <span className="mb-1 text-5xl">P</span>
-            <span className="text-6xl">{ position }</span>
+          <div className="flex gap-3">
+            <div>
+              <span className="mt-2.5 text-5xl">L</span>
+              <span className="text-6xl">{ currentLapNumber }</span>
+            </div>
+            <div>
+              <span className="mb-1 text-5xl">P</span>
+              <span className="text-6xl">{ position }</span>
+            </div>
           </div>
         </div>
       </div>
