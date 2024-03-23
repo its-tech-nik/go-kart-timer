@@ -23,7 +23,7 @@ export default function Home() {
   const [bestLap, setBestLap] = useState<number>(0)
   const [newBest, setNewBest] = useState<boolean>(false)
   const [time, setTime] = useState<number>(0)
-  const { startCommunication, reInitWebsocketConnection, result: {lastLapTime, position, previousBestLaps, gap, gapBehind, bestOverallLaptime, currentLapNumber} } = useAlphaTimerWebsocket(driverName, track)
+  const { startCommunication, reInitWebsocketConnection, result: {raceEvent, lastLapTime, position, previousBestLaps, gap, gapBehind, bestOverallLaptime, currentLapNumber} } = useAlphaTimerWebsocket(driverName, track)
   // The callback will be called every 1000 milliseconds.
   const timer = useTimer({ delay: 10 }, () => {
     const timePassed = timer.getElapsedResumedTime()
@@ -40,6 +40,13 @@ export default function Home() {
   useEffect(() => {
     getCurrentCompetitionData()
   }, [track])
+
+  useEffect(() => {
+    if (raceEvent === 'finished_race') {
+      console.log('it happened')
+      timer.stop()
+    }
+  }, [raceEvent])
 
   // start timer when drivername is set or restart timer when lap is completed
   useEffect(() => {
@@ -122,6 +129,7 @@ export default function Home() {
   const clearTrackSelection = () => {
     setTrack('')
     setDriverName('')
+    timer.stop()
   }
 
   const selectTrack = (event: ChangeEvent<HTMLSelectElement>) => {
@@ -194,14 +202,17 @@ export default function Home() {
           </div>
         </div>
         <div className="stats flex basis-1/4 flex-col items-center font-mono">
-          <div className="font-bold grow text-3xl">
-            <span>Gap: { gap }</span>
+          <div className="font-bold w-full grow flex gap-3 justify-between text-3xl mr-5">
+            <span>Gap:</span>
+            <span>{ gap }</span>
           </div>
-          <div className="font-bold grow text-3xl">
-            <span>Back: { gapBehind }</span>
+          <div className="font-bold w-full grow flex gap-3 justify-between text-3xl mr-5">
+            <span>Beh:</span>
+            <span>{ gapBehind }</span>
           </div>
-          <div className="font-bold grow text-3xl">
-            <span>BOL: { formatTime(bestOverallLaptime !== Infinity ? bestOverallLaptime : 0) }</span>
+          <div className="font-bold w-full grow flex gap-3 justify-between text-3xl mr-5">
+            <span>BOL:</span>
+            <span>{ formatTime(bestOverallLaptime !== Infinity ? bestOverallLaptime : 0) }</span>
           </div>
           <div className="flex gap-3">
             <div>

@@ -31,9 +31,11 @@ const useAlphaTimerWebsocket = (driverName: string, track: string) => {
             lap: 0,
         },
     ])
+    const [raceEvent, setRaceEvent] = useState<string>('')
 
     const lastRecordedSequenceNumber = useRef<number>(-1)
     const lastRecordedLapNumber = useRef<number>(-1)
+
 
     const startCommunication = (competitor: any) => {
         console.log('startCommunication', competitor)
@@ -85,8 +87,6 @@ const useAlphaTimerWebsocket = (driverName: string, track: string) => {
             if ((event === 'update' || event === 'new_session' || event === 'updated_session') && data) {
                 const dataJson = JSON.parse(data)
 
-                // console.log(dataJson)
-
                 if (event === 'new_session') {
                     setPosition(0)
                     setLastLapTime(0)
@@ -117,8 +117,6 @@ const useAlphaTimerWebsocket = (driverName: string, track: string) => {
                 if (dataJson['Competitors']) {
                     const competitors = dataJson['Competitors']
 
-                    console.log(competitors)
-
                     for (let i=0; i < competitors.length; i++) {
                         // show data for the session selected (10m or 20m) or show all if class is not selected
                         if (dataJson['SD'] !== sd && sd) continue
@@ -134,9 +132,7 @@ const useAlphaTimerWebsocket = (driverName: string, track: string) => {
                         }
 
                         if (competitor['CompetitorId'] !== driverDetails.id && competitor['Laps']) {
-                            console.log('asdf0', competitor['Laps'][0])
-                            if (competitor['Laps'][0]['Position'] === position + 1 && competitor['Laps'][0]['Gap']) {
-                                console.log('asdf', competitor['Laps'][0], competitor['Laps'][0]['Gap'])
+                            if ((competitor['Laps'][0]['Position'] === (position + 1)) && competitor['Laps'][0]['Gap']) {
                                 setGapBehind(competitor['Laps'][0]['Gap'])
                             }
                         }
@@ -145,10 +141,16 @@ const useAlphaTimerWebsocket = (driverName: string, track: string) => {
                         if (competitor['CompetitorId'] === driverDetails.id) {
 
                             if (competitor['NumberOfLaps'] && testForNoMissingLaps(competitor['NumberOfLaps'])) throw new Error(`Missing Lap: ${competitor['NumberOfLaps']}`)
-                            
+
+                            console.log(competitor)
+
                             if (competitor['Laps']) {
                                 const lap = competitor['Laps'][0]
 
+                                if (lap['TakenChequered']) {
+                                    setRaceEvent('finished_race')
+                                } 
+                                
                                 if (lap['Position']) setPosition(lap['Position'])
 
                                 if (lap['LapTime']) {
@@ -190,6 +192,7 @@ const useAlphaTimerWebsocket = (driverName: string, track: string) => {
             currentLapNumber,
             bestOverallLaptime,
             previousBestLaps,
+            raceEvent,
         }
     }
 }
