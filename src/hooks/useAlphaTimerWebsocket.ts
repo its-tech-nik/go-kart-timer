@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import useWebSocket from 'react-use-websocket';
 
-const useAlphaTimerWebsocket = (competitorName: string) => {
-    const { sendJsonMessage, lastJsonMessage } = useWebSocket('ws://localhost:443')
-    // const { sendJsonMessage, lastJsonMessage, getWebSocket } = useWebSocket('wss://ws-eu.pusher.com/app/3aaffebc8193ea83cb2f?protocol=7&client=js&version=3.1.0&flash=false')
+const useAlphaTimerWebsocket = (driverName: string, track: string) => {
+    // const { sendJsonMessage, lastJsonMessage } = useWebSocket('ws://localhost:443')
+    const { sendJsonMessage, lastJsonMessage, getWebSocket } = useWebSocket('wss://ws-eu.pusher.com/app/3aaffebc8193ea83cb2f?protocol=7&client=js&version=3.1.0&flash=false')
 
+    const [sessionId, setSessionId] = useState<number>()
     const [driverDetails, setDriverDetails] = useState({
         id: null,
         name: null,
@@ -13,6 +14,7 @@ const useAlphaTimerWebsocket = (competitorName: string) => {
     const [position, setPosition] = useState<number>(0)
     const [lastLapTime, setLastLapTime] = useState<number>(0)
     const [gap, setGap] = useState<number>(0)
+    const [gapBehind, setGapBehind] = useState<number>(0)
     const [currentLapNumber, setCurrentLapNumber] = useState<number>(0)
     const [bestOverallLaptime, setBestOverallLaptime] = useState<number>(Infinity)
     const [previousBestLaps, setPreviousBestLaps] = useState([
@@ -33,7 +35,8 @@ const useAlphaTimerWebsocket = (competitorName: string) => {
     const lastRecordedSequenceNumber = useRef<number>(-1)
     const lastRecordedLapNumber = useRef<number>(-1)
 
-    const startMessaging = (competitor: any) => {
+    const startCommunication = (competitor: any) => {
+        console.log('startCommunication', competitor)
         setDriverDetails({
             id: competitor['CompetitorId'],
             name: competitor['CompetitorName'],
@@ -41,7 +44,7 @@ const useAlphaTimerWebsocket = (competitorName: string) => {
 
         sendJsonMessage({
             event: "pusher:subscribe",
-            data: { channel: "qleisureprod" }
+            data: { channel: `${track}prod` }
         })
     }
 
@@ -68,6 +71,12 @@ const useAlphaTimerWebsocket = (competitorName: string) => {
     }
 
     useEffect(() => {
+        if (driverName && track) {
+            // startCommunication()
+        }
+    }, [])
+
+    useEffect(() => {
         const sd = null
 
         if (lastJsonMessage) {
@@ -75,6 +84,8 @@ const useAlphaTimerWebsocket = (competitorName: string) => {
 
             if ((event === 'update' || event === 'new_session' || event === 'updated_session') && data) {
                 const dataJson = JSON.parse(data)
+
+                // console.log(dataJson)
 
                 if (event === 'new_session') {
                     setPosition(0)
@@ -98,11 +109,15 @@ const useAlphaTimerWebsocket = (competitorName: string) => {
                     ])
                 }
                 else if (event === 'updated_session') console.log('UPDATED SESSION')
+
+                if (dataJson['SessionId'] && dataJson['SessionId'] !== sessionId) setSessionId(dataJson['SessionId'])
         
                 if (dataJson['Sequence'] && testForNoMissingPackets(dataJson['Sequence'])) throw new Error(`Missing Packet: ${dataJson['Sequence']}`)
             
                 if (dataJson['Competitors']) {
                     const competitors = dataJson['Competitors']
+
+                    console.log(competitors)
 
                     for (let i=0; i < competitors.length; i++) {
                         // show data for the session selected (10m or 20m) or show all if class is not selected
@@ -114,9 +129,18 @@ const useAlphaTimerWebsocket = (competitorName: string) => {
 
                         // Grab the competitorId associated with the CompetitorName
                         // TODO: Test if we need that?
-                        // if (competitor['CompetitorName'] && competitor['CompetitorName'] === competitorName) {
-                        //     setDriverDetails({...driverDetails, id: competitor['CompetitorId']})
-                        // }
+                        if (competitor['CompetitorName'] && competitor['CompetitorName'] === driverDetails.name) {
+                            setDriverDetails({...driverDetails, id: competitor['CompetitorId']})
+                        }
+
+                        if (competitor['CompetitorId'] !== driverDetails.id && competitor['Laps']) {
+                            console.log('asdf0', competitor['Laps'][0])
+                            if (competitor['Laps'][0]['Position'] === position + 1 && competitor['Laps'][0]['Gap']) {
+                                console.log('asdf', competitor['Laps'][0], competitor['Laps'][0]['Gap'])
+                                setGapBehind(competitor['Laps'][0]['Gap'])
+                            }
+                        }
+
                         // show data only for selected competitor using its ID
                         if (competitor['CompetitorId'] === driverDetails.id) {
 
@@ -155,13 +179,14 @@ const useAlphaTimerWebsocket = (competitorName: string) => {
     }, [lastJsonMessage])
 
     return {
-        startMessaging,
+        startCommunication,
         reInitWebsocketConnection,
         result: {
             ...driverDetails,
             position,
             lastLapTime,
             gap,
+            gapBehind,
             currentLapNumber,
             bestOverallLaptime,
             previousBestLaps,

@@ -8,78 +8,55 @@ import useAlphaTimerWebsocket from "@/hooks/useAlphaTimerWebsocket";
 import clsx from "clsx";
 import { formatTime } from "@/utils/formatTime";
 import { useTimer } from 'react-use-precision-timer';
+import tracks from './tracks.json'
 
 export default function Home() {
-  const [queryParameters] = useSearchParams()
-  const [driverName, setDriverName] = useState<string>('')
-  const { startMessaging, reInitWebsocketConnection, result: {lastLapTime, position, previousBestLaps, gap, bestOverallLaptime, currentLapNumber} } = useAlphaTimerWebsocket(queryParameters?.[1] || driverName)
-  const [ isFullScreen, setIsFullScreen] = useState<Boolean>(false)
+  const [isFullScreen, setIsFullScreen] = useState<Boolean>(false)
+  const keepScreenOn = useRef<NoSleep>()
+  const audio = useRef<HTMLAudioElement>(null)
+
+  const queryParams = useSearchParams()
+  const [track, setTrack] = useState<string>(queryParams.get('track') || '')
+  const [driverName, setDriverName] = useState<string>(queryParams.get('driver') || '')
+  const [competitors, setCompetitors] = useState([])
+
   const [bestLap, setBestLap] = useState<number>(0)
   const [newBest, setNewBest] = useState<boolean>(false)
-  const [competitors, setCompetitors] = useState([])
-  const audio = useRef<HTMLAudioElement>(null)
-  const keepScreenOn = useRef<NoSleep>()
   const [time, setTime] = useState<number>(0)
-
+  const { startCommunication, reInitWebsocketConnection, result: {lastLapTime, position, previousBestLaps, gap, gapBehind, bestOverallLaptime, currentLapNumber} } = useAlphaTimerWebsocket(driverName, track)
   // The callback will be called every 1000 milliseconds.
   const timer = useTimer({ delay: 10 }, () => {
     const timePassed = timer.getElapsedResumedTime()
-    if (timePassed > 10 * 1000) {
+    if (timePassed > 59 * 1000) {
       // console.log(competitors)
       reInitWebsocketConnection()
+      // location.reload()
       timer.start()
     }
 
     setTime(timePassed)
   });
 
-  const getCompetitionInformation = () => {
-
-    fetch('https://live.alphatiming.co.uk/qleisure.json')
-    .then(async (results) => {
-      const raceSetup = await results.json()
-
-      if (queryParameters && queryParameters[0] === 'driver_name') {
-        const competitor = raceSetup['Competitors'].find((competitor: any) => competitor['CompetitorName'] === queryParameters[1])
-
-        if (competitor) startMessaging(competitor)
-      }
-
-      console.log(raceSetup['Competitors'])
-      setCompetitors(raceSetup['Competitors'])
-    })
-  }
-
   useEffect(() => {
+    getCurrentCompetitionData()
+  }, [track])
+
+  // start timer when drivername is set or restart timer when lap is completed
+  useEffect(() => {
+    if (!driverName) return
+
     timer.start();
-  }, [lastLapTime])
 
+  }, [driverName, lastLapTime])
+
+  // communicate with socket when we have the driver details
   useEffect(() => {
-    if (queryParameters && queryParameters[0] === 'driver_name') {
-      setDriverName(queryParameters[1])
-    }
+    if (!driverName || !track || !competitors.length) return
 
-    getCompetitionInformation()
+    const competitor = competitors.find((competitor: any) => competitor['CompetitorName'] === driverName)
 
-    document.addEventListener('fullscreenchange', () => {
-      setIsFullScreen(Boolean(document.fullscreenElement))
-
-      if (!keepScreenOn.current) {
-        keepScreenOn.current = new NoSleep()
-      }
-
-      if (!keepScreenOn.current.isEnabled) {
-        keepScreenOn.current.enable();
-      } else {
-        keepScreenOn.current.disable();
-      }
-    })
-
-    const mainElement = document.querySelector('main')
-    mainElement?.addEventListener('transitionend', () => setNewBest(false))
-
-    timer.start()
-  }, [])
+    startCommunication(competitor)
+  }, [driverName, competitors])
 
   useEffect(() => {
     if (bestLap !== previousBestLaps[0].lap) {
@@ -89,45 +66,116 @@ export default function Home() {
     }
   }, [previousBestLaps])
 
-  const competitorSelected = (event: ChangeEvent<HTMLSelectElement>) => {
-    const competitor = competitors.find(competitor => competitor['CompetitorId'] === parseInt(event.target?.value))
+  const handleFullscreen = () => {
+    setIsFullScreen(Boolean(document.fullscreenElement))
 
-    startMessaging(competitor)
+    if (!keepScreenOn.current) {
+      keepScreenOn.current = new NoSleep()
+    }
 
-    history.pushState({}, '', `?driver_name=${competitor?.['CompetitorName']}`)
-
-    setDriverName(competitor?.['CompetitorName'] || '')
+    if (!keepScreenOn.current.isEnabled) {
+      keepScreenOn.current.enable();
+      screen.orientation.lock('landscape')
+    } else {
+      keepScreenOn.current.disable();
+    }
   }
 
-  const clearDriverName = () => setDriverName('')
+  useEffect(() => {
+    document.addEventListener('fullscreenchange', handleFullscreen)
+
+    const mainElement = document.querySelector('main')
+    if (mainElement) {
+      mainElement.addEventListener('transitionend', () => setNewBest(false))
+    }
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreen)
+
+      if (mainElement) {
+        mainElement.removeEventListener('transitionend', () => setNewBest(false))
+      }
+    }
+  }, [])
+
+  const competitorSelected = (event: ChangeEvent<HTMLSelectElement>) => {
+    const competitor = competitors[parseInt(event.target.value)]
+    if (!competitor) return
+
+    setDriverName(competitor?.['CompetitorName'])
+
+    history.pushState({}, '', `?track=${track}&driver=${competitor?.['CompetitorName']}`)
+  }
+
+  const getCurrentCompetitionData = async () => {
+    if (!track) return
+
+    const response = await fetch(`https://live.alphatiming.co.uk/${track}.json`)
+
+    const raceSetup = await response.json()
+
+    setCompetitors(raceSetup['Competitors'])
+
+    return raceSetup['Competitors']
+  }
+
+  const clearTrackSelection = () => {
+    setTrack('')
+    setDriverName('')
+  }
+
+  const selectTrack = (event: ChangeEvent<HTMLSelectElement>) => {
+    setTrack(event.target.value)
+    setDriverName('')
+    history.pushState({}, '', `?track=${event.target.value}`)
+  }
 
   return (
     <main className={clsx({
       'h-full flex flex-col transition-colors duration-500': true,
       'bg-green-700' : newBest,
     })}>
-      <div className="flex justify-between">
+      <div className="flex gap-3">
         <audio ref={audio} src="./sounds/ding_sound.mp3" />
-        {!isFullScreen && <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={() => document.documentElement.requestFullscreen()}>Fullscreen</button>}
-        <div>
-          <span>Driver's Name: </span>
-          { driverName ? <span onClick={clearDriverName} className="pe-3">{ driverName }</span> : (
-            <select onChange={competitorSelected} className="bg-green-600">
-              <option value="">Select Driver</option>
-              {competitors.map((competitor, index) => {
-                return (
-                  <option key={index} value={competitor['CompetitorId']}>{competitor['CompetitorName']}</option>
-                )
-              })}
-            </select>
-          )}
+        {!isFullScreen && <button className="md:hidden bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded place-self-stretch" onClick={() => document.documentElement.requestFullscreen()}>Fullscreen</button>}
+        <div className="col-start-3">
+          <span>Track: </span>
+          {track ? (
+              <span onClick={clearTrackSelection}>{track}</span>
+            ) : (
+              <select onChange={selectTrack} className="bg-green-600 w-40">
+                <option value="">Select Track</option>
+                {tracks.map(({ code, track_name }) => {
+                  return (
+                    <option key={code} value={code}>{track_name}</option>
+                  )
+                })}
+              </select>
+            )
+          }
         </div>
+        {track && <div>
+          <span>Driver: </span>
+          { driverName ? (
+              <span onClick={() => setDriverName('')} className="pe-3">{ driverName }</span>
+            ) : (
+              <select onChange={competitorSelected} className="bg-green-600 w-40">
+                <option value="">Select Driver</option>
+                {competitors.map((competitor, index) => {
+                  return (
+                    <option key={competitor['CompetitorId']} value={index}>{competitor['CompetitorName']}</option>
+                  )
+                })}
+              </select>
+            )
+          }
+        </div>}
       </div>
       <div className="flex justify-center font-mono">
-        <span className="text-9xl">{ time < 5000 && lastLapTime !== 0 ? formatTime(lastLapTime) : formatTime(time) }</span>
+        <span className="max-sm:text-8xl text-9xl">{ time < 5000 && lastLapTime !== 0 ? formatTime(lastLapTime) : formatTime(time) }</span>
       </div>
-      <div className="flex grow mt-3">
-        <div className="previous-laps basis-3/4">
+      <div className="flex max-sm:flex-col grow mt-3">
+        <div className="max-sm:basis-2/4 basis-3/4">
           <span className="pl-9">Best Laps:</span>
           <div className="flex flex-col items-center">
             { previousBestLaps.map(({ time, lap }: any, index: number) => {
@@ -148,6 +196,9 @@ export default function Home() {
         <div className="stats flex basis-1/4 flex-col items-center font-mono">
           <div className="font-bold grow text-3xl">
             <span>Gap: { gap }</span>
+          </div>
+          <div className="font-bold grow text-3xl">
+            <span>Back: { gapBehind }</span>
           </div>
           <div className="font-bold grow text-3xl">
             <span>BOL: { formatTime(bestOverallLaptime !== Infinity ? bestOverallLaptime : 0) }</span>
