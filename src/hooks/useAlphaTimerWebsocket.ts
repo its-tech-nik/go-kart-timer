@@ -139,18 +139,15 @@ const useAlphaTimerWebsocket = (driverName: string, track: string) => {
 
                         // show data only for selected competitor using its ID
                         if (competitor['CompetitorId'] === driverDetails.id) {
-
+                            if (competitor['TakenChequered']) {
+                                setRaceEvent('finished_race')
+                            } 
+                            
                             if (competitor['NumberOfLaps'] && testForNoMissingLaps(competitor['NumberOfLaps'])) throw new Error(`Missing Lap: ${competitor['NumberOfLaps']}`)
-
-                            console.log(competitor)
 
                             if (competitor['Laps']) {
                                 const lap = competitor['Laps'][0]
 
-                                if (lap['TakenChequered']) {
-                                    setRaceEvent('finished_race')
-                                } 
-                                
                                 if (lap['Position']) setPosition(lap['Position'])
 
                                 if (lap['LapTime']) {

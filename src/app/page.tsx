@@ -42,19 +42,21 @@ export default function Home() {
   }, [track])
 
   useEffect(() => {
-    if (raceEvent === 'finished_race') {
-      console.log('it happened')
-      timer.stop()
-    }
   }, [raceEvent])
 
   // start timer when drivername is set or restart timer when lap is completed
   useEffect(() => {
     if (!driverName) return
 
+    if (raceEvent === 'finished_race') {
+      console.log('it happened')
+      timer.stop()
+      return
+    }
+
     timer.start();
 
-  }, [driverName, lastLapTime])
+  }, [raceEvent, driverName, lastLapTime])
 
   // communicate with socket when we have the driver details
   useEffect(() => {
@@ -82,6 +84,7 @@ export default function Home() {
 
     if (!keepScreenOn.current.isEnabled) {
       keepScreenOn.current.enable();
+      // @ts-ignore
       screen.orientation.lock('landscape')
     } else {
       keepScreenOn.current.disable();
