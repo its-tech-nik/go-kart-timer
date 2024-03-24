@@ -37,7 +37,6 @@ const useAlphaTimerWebsocket = (track: string, driverName: string) => {
     const lastRecordedLapNumber = useRef<number>(-1)
 
     const startCommunication = (competitor: any) => {
-        console.log('startCommunication', competitor)
         if (competitor) {
             setDriverDetails({
                 id: competitor['CompetitorId'],
@@ -72,12 +71,6 @@ const useAlphaTimerWebsocket = (track: string, driverName: string) => {
 
         return lap !== lastRecordedLapNumber.current++
     }
-
-    useEffect(() => {
-        if (driverName && track) {
-            // startCommunication()
-        }
-    }, [])
 
     useEffect(() => {
         const sd = null
