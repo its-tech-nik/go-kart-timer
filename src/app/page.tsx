@@ -5,6 +5,7 @@ import { ChangeEvent, useEffect, useRef, useState, useCallback } from "react";
 import NoSleep from 'nosleep.js';
 import { useSearchParams } from "next/navigation";
 import useAlphaTimerWebsocket from "@/hooks/useAlphaTimerWebsocket";
+import useDriverData from "@/hooks/useDriverData"
 import clsx from "clsx";
 import { formatTime } from "@/utils/formatTime";
 import { useTimer } from 'react-use-precision-timer';
@@ -18,12 +19,25 @@ export default function Home() {
   const queryParams = useSearchParams()
   const [track, setTrack] = useState<string>(queryParams.get('track') || '')
   const [driverName, setDriverName] = useState<string>(queryParams.get('driver') || '')
-  const [competitors, setCompetitors] = useState([])
 
-  const [bestLap, setBestLap] = useState<number>(0)
+  const {
+    reInitWebsocketConnection,
+    raceCompetitors,
+    driver: {
+      raceEvent,
+      lastLapTime,
+      newBestLap,
+      previousBestLaps = [],
+      gap,
+      gapBehind,
+      bestOverallLaptime,
+      currentLapNumber,
+      position
+    } = {}
+  } = useDriverData(track, driverName)
+
   const [newBest, setNewBest] = useState<boolean>(false)
   const [time, setTime] = useState<number>(0)
-  const { startCommunication, reInitWebsocketConnection, result: {raceEvent, lastLapTime, position, previousBestLaps, gap, gapBehind, bestOverallLaptime, currentLapNumber} } = useAlphaTimerWebsocket(driverName, track)
   // The callback will be called every 1000 milliseconds.
   const timer = useTimer({ delay: 10 }, () => {
     const timePassed = timer.getElapsedResumedTime()
@@ -37,19 +51,13 @@ export default function Home() {
     setTime(timePassed)
   });
 
-  useEffect(() => {
-    getCurrentCompetitionData()
-  }, [track])
-
-  useEffect(() => {
-  }, [raceEvent])
-
-  // start timer when drivername is set or restart timer when lap is completed
+  // start timer when drivername is set,
+  // restart timer when lap is completed,
+  // stop timer when race has finished
   useEffect(() => {
     if (!driverName) return
 
     if (raceEvent === 'finished_race') {
-      console.log('it happened')
       timer.stop()
       return
     }
@@ -58,22 +66,10 @@ export default function Home() {
 
   }, [raceEvent, driverName, lastLapTime])
 
-  // communicate with socket when we have the driver details
   useEffect(() => {
-    if (!driverName || !track || !competitors.length) return
-
-    const competitor = competitors.find((competitor: any) => competitor['CompetitorName'] === driverName)
-
-    startCommunication(competitor)
-  }, [driverName, competitors])
-
-  useEffect(() => {
-    if (bestLap !== previousBestLaps[0].lap) {
-      setBestLap(previousBestLaps[0].lap)
-      setNewBest(true)
-      audio.current?.play()
-    }
-  }, [previousBestLaps])
+    setNewBest(true)
+    audio.current?.play()
+  }, [newBestLap])
 
   const handleFullscreen = () => {
     setIsFullScreen(Boolean(document.fullscreenElement))
@@ -109,7 +105,7 @@ export default function Home() {
   }, [])
 
   const competitorSelected = (event: ChangeEvent<HTMLSelectElement>) => {
-    const competitor = competitors[parseInt(event.target.value)]
+    const competitor = raceCompetitors[parseInt(event.target.value)]
     if (!competitor) return
 
     setDriverName(competitor?.['CompetitorName'])
@@ -117,28 +113,20 @@ export default function Home() {
     history.pushState({}, '', `?track=${track}&driver=${competitor?.['CompetitorName']}`)
   }
 
-  const getCurrentCompetitionData = async () => {
-    if (!track) return
-
-    const response = await fetch(`https://live.alphatiming.co.uk/${track}.json`)
-
-    const raceSetup = await response.json()
-
-    setCompetitors(raceSetup['Competitors'])
-
-    return raceSetup['Competitors']
-  }
-
   const clearTrackSelection = () => {
+    clearDriver()
     setTrack('')
-    setDriverName('')
-    timer.stop()
   }
 
   const selectTrack = (event: ChangeEvent<HTMLSelectElement>) => {
     setTrack(event.target.value)
     setDriverName('')
     history.pushState({}, '', `?track=${event.target.value}`)
+  }
+
+  const clearDriver = () => {
+    setDriverName('')
+    timer.stop()
   }
 
   return (
@@ -168,11 +156,11 @@ export default function Home() {
         {track && <div>
           <span>Driver: </span>
           { driverName ? (
-              <span onClick={() => setDriverName('')} className="pe-3">{ driverName }</span>
+              <span onClick={clearDriver} className="pe-3">{ driverName }</span>
             ) : (
               <select onChange={competitorSelected} className="bg-green-600 w-40">
                 <option value="">Select Driver</option>
-                {competitors.map((competitor, index) => {
+                {raceCompetitors.map((competitor, index) => {
                   return (
                     <option key={competitor['CompetitorId']} value={index}>{competitor['CompetitorName']}</option>
                   )
