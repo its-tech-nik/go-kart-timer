@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import useWebSocket from 'react-use-websocket';
 
 const useAlphaTimerWebsocket = (track: string, driverName: string) => {
-    const { sendJsonMessage, lastJsonMessage } = useWebSocket('ws://localhost:443')
-    // const { sendJsonMessage, lastJsonMessage, getWebSocket } = useWebSocket('wss://ws-eu.pusher.com/app/3aaffebc8193ea83cb2f?protocol=7&client=js&version=3.1.0&flash=false')
+    // const { sendJsonMessage, lastJsonMessage } = useWebSocket('ws://localhost:443')
+    const { sendJsonMessage, lastJsonMessage, getWebSocket } = useWebSocket('wss://ws-eu.pusher.com/app/3aaffebc8193ea83cb2f?protocol=7&client=js&version=3.1.0&flash=false')
 
     const [sessionId, setSessionId] = useState<number>()
     const [driverDetails, setDriverDetails] = useState({
