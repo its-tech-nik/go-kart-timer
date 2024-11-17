@@ -10,7 +10,7 @@ export default (track: string, driverName: string) => {
         addPreviousBestLap,
         calculateBestOverallLaptime,
         result: {
-            raceEvent,
+            driverEvent,
             lastLapTime,
             previousBestLaps,
             gap,
@@ -73,7 +73,7 @@ export default (track: string, driverName: string) => {
     reInitWebsocketConnection,
     raceCompetitors: competitors,
     driver: {
-        raceEvent,
+        driverEvent,
         lastLapTime,
         newBestLap: bestLap,
         previousBestLaps,

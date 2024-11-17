@@ -31,7 +31,7 @@ const useAlphaTimerWebsocket = (track: string, driverName: string) => {
             lap: 0,
         },
     ])
-    const [raceEvent, setRaceEvent] = useState<string>('')
+    const [driverEvent, setDriverEvent] = useState<string>('')
 
     const lastRecordedSequenceNumber = useRef<number>(-1)
     const lastRecordedLapNumber = useRef<number>(-1)
@@ -151,9 +151,9 @@ const useAlphaTimerWebsocket = (track: string, driverName: string) => {
                         // if (competitor['NumberOfLaps'] && testForNoMissingLaps(competitor['NumberOfLaps'])) throw new Error(`Missing Lap: ${competitor['NumberOfLaps']}`)
 
                         if (competitor['TakenChequered']) {
-                            setRaceEvent('finished_race')
-                        } else if(raceEvent !== 'update') {
-                            setRaceEvent('update')
+                            setDriverEvent('finished_race')
+                        } else if(driverEvent !== 'update') {
+                            setDriverEvent('update')
                         }
                         
                         if (competitor['Laps']) {
@@ -201,7 +201,7 @@ const useAlphaTimerWebsocket = (track: string, driverName: string) => {
             currentLapNumber,
             bestOverallLaptime,
             previousBestLaps,
-            raceEvent,
+            driverEvent,
         },
         setters: {
             setGap,

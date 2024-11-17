@@ -28,7 +28,7 @@ export default function Home() {
     reInitWebsocketConnection,
     raceCompetitors,
     driver: {
-      raceEvent,
+      driverEvent,
       lastLapTime,
       newBestLap,
       previousBestLaps = [],
@@ -55,20 +55,19 @@ export default function Home() {
     setTime(timePassed)
   });
 
-  // start timer when drivername is set,
-  // restart timer when lap is completed,
-  // stop timer when race has finished
   useEffect(() => {
     if (!driverName) return
+    // allow for timer to start when competitor name is set
 
-    if (raceEvent === 'finished_race') {
+    // stop timer when race has finished
+    if (driverEvent === 'finished_race') {
       timer.stop()
       return
     }
 
     timer.start();
 
-  }, [raceEvent, driverName, lastLapTime])
+  }, [driverEvent, driverName, lastLapTime])
 
   useEffect(() => {
     setNewBest(true)
