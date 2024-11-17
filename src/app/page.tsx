@@ -20,6 +20,10 @@ export default function Home() {
   const [track, setTrack] = useState<string>(queryParams.get('track') || '')
   const [driverName, setDriverName] = useState<string>(queryParams.get('driver') || '')
 
+ const trackCodeToName = (code: string) => {
+  return tracks.find(track => track.code === code)?.track_name
+ }
+
   const {
     reInitWebsocketConnection,
     raceCompetitors,
@@ -140,7 +144,7 @@ export default function Home() {
         <div className="col-start-3">
           <span>Track: </span>
           {track ? (
-              <span onClick={clearTrackSelection}>{track}</span>
+              <span onClick={clearTrackSelection}>{trackCodeToName(track)}</span>
             ) : (
               <select onChange={selectTrack} className="bg-green-600 w-40">
                 <option value="">Select Track</option>

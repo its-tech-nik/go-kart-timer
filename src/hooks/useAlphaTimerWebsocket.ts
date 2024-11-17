@@ -72,6 +72,33 @@ const useAlphaTimerWebsocket = (track: string, driverName: string) => {
         return lap !== lastRecordedLapNumber.current++
     }
 
+    const addPreviousBestLap = (previousLap: any) => {
+        setPreviousBestLaps([
+            previousBestLaps[0],
+            previousBestLaps[1],
+            previousLap,
+        ].sort((a, b) => a.time - b.time))
+    }
+
+    const resetDriverMeasurements = () => {
+        setPosition(0)
+        setLastLapTime(0)
+        setGap(0)
+        setCurrentLapNumber(0)
+        setBestOverallLaptime(Infinity)
+        setPreviousBestLaps([
+            previousBestLaps[0],
+            {
+                time: Infinity,
+                lap: 0,
+            },
+            {
+                time: Infinity,
+                lap: 0,
+            },
+        ])
+    }
+
     useEffect(() => {
         const sd = null
 
@@ -83,27 +110,8 @@ const useAlphaTimerWebsocket = (track: string, driverName: string) => {
             if ((event === 'update' || event === 'new_session' || event === 'updated_session') && data) {
                 const dataJson = JSON.parse(data)
 
-                // On each new session zero all values
                 if (event === 'new_session') {
-                    setPosition(0)
-                    setLastLapTime(0)
-                    setGap(0)
-                    setCurrentLapNumber(0)
-                    setBestOverallLaptime(Infinity)
-                    setPreviousBestLaps([
-                        {
-                            time: Infinity,
-                            lap: 0,
-                        },
-                        {
-                            time: Infinity,
-                            lap: 0,
-                        },
-                        {
-                            time: Infinity,
-                            lap: 0,
-                        },
-                    ])
+                    resetDriverMeasurements()
                 }
                 else if (event === 'updated_session') console.log('UPDATED SESSION')
 
@@ -116,16 +124,8 @@ const useAlphaTimerWebsocket = (track: string, driverName: string) => {
                     const competitors = dataJson['Competitors']
 
                     for (let i=0; i < competitors.length; i++) {
-                        // show data for the session selected (10m or 20m) or show all if class is not selected
-                        if (dataJson['SD'] !== sd && sd) continue
-
                         const competitor = competitors[i]
-
-                        // Grab the competitorId associated with the CompetitorName
-                        if (competitor['CompetitorName'] && competitor['CompetitorName'] === driverName) {
-                            setDriverDetails({...driverDetails, id: competitor['CompetitorId']})
-                        }
-
+                        
                         if (competitor['BestLaptime'] && competitor['BestLaptime'] < bestOverallLaptime) setBestOverallLaptime(competitor['BestLaptime'])
 
                         if (competitor['CompetitorId'] !== driverDetails.id && competitor['Laps']) {
@@ -134,38 +134,47 @@ const useAlphaTimerWebsocket = (track: string, driverName: string) => {
                             }
                         }
 
-                        if (!driverDetails.id) return
+                        /**
+                         * Competitors are registered in the session with their CompetitorName and CompetitorId
+                         * only when they first pass from the start line. CompetitorName is received only on 
+                         * registration of the driver on the session, which we can use to associate it with the user's
+                         * driverName, that has been setup prior to the session, and will be used to get the
+                         * CompetitorId to filter the websocket messages specifically directed for our setup driver.
+                         */
+                        if (competitor['CompetitorName'] && competitor['CompetitorName'] === driverName) {
+                            setDriverDetails({...driverDetails, id: competitor['CompetitorId']})
+                        }
 
-                        // show data only for selected competitor using its ID
-                        if (competitor['CompetitorId'] === driverDetails.id) {
-                            if (competitor['TakenChequered']) {
-                                setRaceEvent('finished_race')
-                            } else if(raceEvent !== 'update') {
-                                setRaceEvent('update')
-                            }
-                            
-                            if (competitor['NumberOfLaps'] && testForNoMissingLaps(competitor['NumberOfLaps'])) throw new Error(`Missing Lap: ${competitor['NumberOfLaps']}`)
+                        // Stop early if we don't have the correct CompetitorId
+                        if (!driverDetails.id || competitor['CompetitorId'] !== driverDetails.id) return
+                        
+                        // if (competitor['NumberOfLaps'] && testForNoMissingLaps(competitor['NumberOfLaps'])) throw new Error(`Missing Lap: ${competitor['NumberOfLaps']}`)
 
-                            if (competitor['Laps']) {
-                                const lap = competitor['Laps'][0]
+                        if (competitor['TakenChequered']) {
+                            setRaceEvent('finished_race')
+                        } else if(raceEvent !== 'update') {
+                            setRaceEvent('update')
+                        }
+                        
+                        if (competitor['Laps']) {
+                            const lap = competitor['Laps'][0]
 
-                                if (lap['Position']) setPosition(lap['Position'])
+                            if (lap['Position']) setPosition(lap['Position'])
 
-                                if (lap['LapTime']) {
-                                    setLastLapTime(lap['LapTime'])
+                            if (lap['LapTime']) {
+                                setLastLapTime(lap['LapTime'])
 
-                                    if (lap['LapTime'] && lap['LapTime'] < previousBestLaps[2].time) {
-                                        addPreviousBestLap({
-                                            time: lap['LapTime'],
-                                            lap: competitor['NumberOfLaps'],
-                                        })
-                                    }
+                                if (lap['LapTime'] && lap['LapTime'] < previousBestLaps[2].time) {
+                                    addPreviousBestLap({
+                                        time: lap['LapTime'],
+                                        lap: competitor['NumberOfLaps'],
+                                    })
                                 }
-
-                                if(lap['Gap']) setGap(lap['Gap'])
-
-                                if(lap['LapNumber']) setCurrentLapNumber(lap['LapNumber'])
                             }
+
+                            if(lap['Gap']) setGap(lap['Gap'])
+
+                            if(lap['LapNumber']) setCurrentLapNumber(lap['LapNumber'])
                         }
                     }
                 }
@@ -173,24 +182,14 @@ const useAlphaTimerWebsocket = (track: string, driverName: string) => {
         }
     }, [lastJsonMessage])
 
-    const calculateBestOverallLaptime = (competitors: any) => {
-        setBestOverallLaptime(competitors.reduce((acc: number, value: any) => {
-            if (acc < value['BestLaptime']) return acc
-            return value['BestLaptime']
-        }, Infinity))
-    }
-
-    const addPreviousBestLap = (previousLap: any) => {
-        setPreviousBestLaps([
-            previousBestLaps[0],
-            previousBestLaps[1],
-            previousLap,
-        ].sort((a, b) => a.time - b.time))
-    }
-
     return {
         startCommunication,
-        calculateBestOverallLaptime,
+        calculateBestOverallLaptime: (competitors: any) => {
+            setBestOverallLaptime(competitors.reduce((acc: number, value: any) => {
+                if (acc < value['BestLaptime']) return acc
+                return value['BestLaptime']
+            }, Infinity))
+        },
         addPreviousBestLap,
         reInitWebsocketConnection,
         result: {
