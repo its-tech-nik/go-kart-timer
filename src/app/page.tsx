@@ -4,8 +4,7 @@
 import { ChangeEvent, useEffect, useRef, useState, useCallback } from "react";
 import NoSleep from 'nosleep.js';
 import { useSearchParams } from "next/navigation";
-import useAlphaTimerWebsocket from "@/hooks/useAlphaTimerWebsocket";
-import useDriverData from "@/hooks/useDriverData"
+import useAlphaTimingSystem from "@/hooks/useAlphaTimingSystem"
 import clsx from "clsx";
 import { formatTime } from "@/utils/formatTime";
 import { useTimer } from 'react-use-precision-timer';
@@ -25,20 +24,18 @@ export default function Home() {
  }
 
   const {
-    reInitWebsocketConnection,
-    raceCompetitors,
-    driver: {
-      driverEvent,
-      lastLapTime,
-      newBestLap,
-      previousBestLaps = [],
+    race_competitors,
+    driverEvent,
+    display: {
+      lapTime,
+      topThreeLaps = [],
       gap,
       gapBehind,
-      bestOverallLaptime,
+      bestLapTime,
       currentLapNumber,
-      position
-    } = {}
-  } = useDriverData(track, driverName)
+      position,
+    } = {},
+  } = useAlphaTimingSystem(track, driverName)
 
   const [newBest, setNewBest] = useState<boolean>(false)
   const [time, setTime] = useState<number>(0)
@@ -47,7 +44,7 @@ export default function Home() {
     const timePassed = timer.getElapsedResumedTime()
     if (timePassed > 59 * 1000) {
       // console.log(competitors)
-      reInitWebsocketConnection()
+      // reInitWebsocketConnection()
       // location.reload()
       timer.start()
     }
@@ -58,21 +55,22 @@ export default function Home() {
   useEffect(() => {
     if (!driverName) return
     // allow for timer to start when competitor name is set
+    // or restart when new lap time is reported
 
-    // stop timer when race has finished
-    if (driverEvent === 'finished_race') {
+    timer.start();
+
+  }, [driverName, lapTime])
+
+  useEffect(() => {
+    if (driverEvent === 'new_best_lap') {
+      setNewBest(true)
+      audio.current?.play()
+    } else if (driverEvent === 'finished_race') {
       timer.stop()
       return
     }
 
-    timer.start();
-
-  }, [driverEvent, driverName, lastLapTime])
-
-  useEffect(() => {
-    setNewBest(true)
-    audio.current?.play()
-  }, [newBestLap])
+  }, [driverEvent])
 
   const handleFullscreen = () => {
     setIsFullScreen(Boolean(document.fullscreenElement))
@@ -108,7 +106,7 @@ export default function Home() {
   }, [])
 
   const competitorSelected = (event: ChangeEvent<HTMLSelectElement>) => {
-    const competitor = raceCompetitors[parseInt(event.target.value)]
+    const competitor = race_competitors[parseInt(event.target.value)]
     if (!competitor) return
 
     setDriverName(competitor?.['CompetitorName'])
@@ -130,6 +128,7 @@ export default function Home() {
   const clearDriver = () => {
     setDriverName('')
     timer.stop()
+    setTime(0)
   }
 
   return (
@@ -163,7 +162,7 @@ export default function Home() {
             ) : (
               <select onChange={competitorSelected} className="bg-green-600 w-40">
                 <option value="">Select Driver</option>
-                {raceCompetitors.map((competitor, index) => {
+                {race_competitors.map((competitor, index) => {
                   return (
                     <option key={competitor['CompetitorId']} value={index}>{competitor['CompetitorName']}</option>
                   )
@@ -174,13 +173,13 @@ export default function Home() {
         </div>}
       </div>
       <div className="flex justify-center font-mono">
-        <span className="max-sm:text-8xl text-9xl">{ time < 5000 && lastLapTime !== 0 ? formatTime(lastLapTime) : formatTime(time) }</span>
+        <span className="max-sm:text-8xl text-9xl">{ time < 5000 && lapTime !== 0 ? formatTime(lapTime) : formatTime(time) }</span>
       </div>
       <div className="flex max-sm:flex-col grow mt-3">
         <div className="max-sm:basis-2/4 basis-3/4">
           <span className="pl-9">Best Laps:</span>
           <div className="flex flex-col items-center">
-            { previousBestLaps.map(({ time, lap }: any, index: number) => {
+            { topThreeLaps.map(({ time, lap }: any, index: number) => {
 
               if (time === Infinity) return
 
@@ -205,8 +204,8 @@ export default function Home() {
             <span>{ gapBehind }</span>
           </div>
           <div className="font-bold w-full grow flex gap-3 justify-between text-3xl mr-5">
-            <span>BOL:</span>
-            <span>{ formatTime(bestOverallLaptime !== Infinity ? bestOverallLaptime : 0) }</span>
+            <span>BLT:</span>
+            <span>{ formatTime(bestLapTime !== Infinity ? bestLapTime : 0) }</span>
           </div>
           <div className="flex gap-3">
             <div>

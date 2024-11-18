@@ -1,22 +1,22 @@
 import { useEffect, useState } from "react"
-import useWebSocket from 'react-use-websocket';
+import useWebSocket, { ReadyState } from 'react-use-websocket';
 
 import { calculateBestOverallLaptime } from "@/utils/calculateBestOverallTime"
 
 const useAlphaTimingSystem = (track: string, driverName: string) => {
-    const { sendJsonMessage, lastJsonMessage, getWebSocket } = useWebSocket('wss://ws-eu.pusher.com/app/3aaffebc8193ea83cb2f?protocol=7&client=js&version=3.1.0&flash=false')
+    const { sendJsonMessage, lastJsonMessage, getWebSocket, readyState } = useWebSocket('wss://ws-eu.pusher.com/app/3aaffebc8193ea83cb2f?protocol=7&client=js&version=3.1.0&flash=false')
 
     const [driverIdentifier, setDriverIdentifier] = useState({
         id: null,
         name: null,
     })
     const [competitors, setCompetitors] = useState([])
-    const [bestOverallLaptime, setBestOverallLaptime] = useState(Infinity)
+    const [bestLapTime, setBestLapTime] = useState(Infinity)
     const [gapBehind, setGapBehind] = useState(0)
 
     // Selected Driver Data
-    const [lastLapTime, setLastLapTime] = useState<number>(0)
-    const [previousBestLaps, setPreviousBestLaps] = useState([
+    const [lapTime, setLapTime] = useState<number>(0)
+    const [topThreeLaps, setTopThreeLaps] = useState([
         {
             time: Infinity,
             lap: 0,
@@ -39,9 +39,12 @@ const useAlphaTimingSystem = (track: string, driverName: string) => {
     const [socketCompetitors, setSocketCompetitors] = useState<any[]>([])
 
     const resetDriverMeasurements = () => {
-        setLastLapTime(0)
-        setPreviousBestLaps([
-            previousBestLaps[0],
+        setLapTime(0)
+        setTopThreeLaps([
+            {
+                time: Infinity,
+                lap: 0,
+            },
             {
                 time: Infinity,
                 lap: 0,
@@ -57,6 +60,23 @@ const useAlphaTimingSystem = (track: string, driverName: string) => {
         setPosition(0)
         setRegistered(false)
     }
+
+    const setSelectedDriverDataFromJson = (selectedDriver: any) => {
+        setTopThreeLaps([
+            topThreeLaps[0],
+            topThreeLaps[1],
+            {
+                time: selectedDriver['BestLaptime'],
+                lap: selectedDriver['BestLapNumber'],
+            }
+        ].sort((a, b) => a.time - b.time))
+        setGapBehind(selectedDriver['Behind'])
+        setGap(selectedDriver['Gap'])
+        setPosition(selectedDriver['GridPosition'])
+        setCurrentLapNumber(selectedDriver['NumberOfLaps'])
+
+    }
+
     const setSelectedDriverData = (selectedDriver: any) => {
 
         if (selectedDriver['TakenChequered']) {
@@ -71,13 +91,13 @@ const useAlphaTimingSystem = (track: string, driverName: string) => {
             if (lap['Position']) setPosition(lap['Position'])
 
             if (lap['LapTime']) {
-                setLastLapTime(lap['LapTime'])
+                setLapTime(lap['LapTime'])
 
                 // add to top 3 best laps
-                if (lap['LapTime'] && lap['LapTime'] < previousBestLaps[2].time) {
-                    setPreviousBestLaps([
-                        previousBestLaps[0],
-                        previousBestLaps[1],
+                if (lap['LapTime'] && lap['LapTime'] < topThreeLaps[2].time) {
+                    setTopThreeLaps([
+                        topThreeLaps[0],
+                        topThreeLaps[1],
                         {
                             time: lap['LapTime'],
                             lap: selectedDriver['NumberOfLaps'],
@@ -94,10 +114,6 @@ const useAlphaTimingSystem = (track: string, driverName: string) => {
         }
     }
 
-    useEffect(() => {
-        getDriverData()
-    }, [])
-
     const getCompetitionData = async () => {
         if (!track) return
 
@@ -107,9 +123,11 @@ const useAlphaTimingSystem = (track: string, driverName: string) => {
         
         setCompetitors(raceSetup['Competitors'])
 
-        setBestOverallLaptime(calculateBestOverallLaptime(raceSetup['Competitors']))
+        console.log(raceSetup['Competitors'])
 
-        return competitors || []
+        setBestLapTime(raceSetup['blt']['tm'])
+
+        return raceSetup['Competitors']
     }
     
     const getDriverData = async (subscribeToDataChannel: boolean = true) => {
@@ -123,7 +141,7 @@ const useAlphaTimingSystem = (track: string, driverName: string) => {
                 name: driver['CompetitorName'],
             })
 
-            setSelectedDriverData(driver)
+            setSelectedDriverDataFromJson(driver)
 
             setRegistered(true)
         }
@@ -146,7 +164,14 @@ const useAlphaTimingSystem = (track: string, driverName: string) => {
         // if they don't, increment the appearances
         // if at least one id is still unregistered after 3 iterations each
             // pull json and start the process from the beginning
-    
+
+    useEffect(() => {
+        if (!driverName) {
+            resetDriverMeasurements()
+        }
+        getDriverData(readyState !== ReadyState.OPEN)
+    }, [driverName])
+        
     const registerCompetitor = async (competitor: any) => {
         /**
          * Competitors are registered in the session with their CompetitorName and CompetitorId
@@ -188,54 +213,55 @@ const useAlphaTimingSystem = (track: string, driverName: string) => {
                 await getDriverData(false)
             }
         } else {
-            socketCompetitors.push({
-                id: competitor['CompetitorId'] || '',
-                name: competitor['CompetitorName'] || '',
-                registered: competitor['CompetitorId'] && competitor['CompetitorName'], // TODO: make sure this returns true or flase depending on the combination of values
-                appearances: 1,
-            })
+            setSocketCompetitors([
+                ...socketCompetitors,
+                {
+                    id: competitor['CompetitorId'] || '',
+                    name: competitor['CompetitorName'] || '',
+                    registered: competitor['CompetitorId'] && competitor['CompetitorName'], // TODO: make sure this returns true or flase depending on the combination of values
+                    appearances: 1,
+                }
+            ])
         }
     }
 
     useEffect(() => {
-        const sd = null
-
         if (!driverName) return
 
-        if (lastJsonMessage) {
-            const { data, event } = lastJsonMessage as any
+        if (!lastJsonMessage) return
 
-            if (event === 'new_session') {
-                setCompetitors([])
-                resetDriverMeasurements()
-            } else if ((event === 'update' || event === 'updated_session') && data) {
+        const { data, event } = lastJsonMessage as any
 
-                const dataJson = JSON.parse(data)
+        if (event === 'new_session') {
+            setCompetitors([])
+            resetDriverMeasurements()
+        } else if ((event === 'update' || event === 'updated_session') && data) {
 
-                // if (dataJson['Sequence'] && testForNoMissingPackets(dataJson['Sequence'])) throw new Error(`Missing Packet: ${dataJson['Sequence']}`)
-                // if (competitor['NumberOfLaps'] && testForNoMissingLaps(competitor['NumberOfLaps'])) throw new Error(`Missing Lap: ${competitor['NumberOfLaps']}`)
-                        
-                if (dataJson['Competitors']) {
-                    const competitors = dataJson['Competitors']
+            const dataJson = JSON.parse(data)
 
-                    for (let i=0; i < competitors.length; i++) {
-                        const competitor = competitors[i]
+            // if (dataJson['Sequence'] && testForNoMissingPackets(dataJson['Sequence'])) throw new Error(`Missing Packet: ${dataJson['Sequence']}`)
+            // if (competitor['NumberOfLaps'] && testForNoMissingLaps(competitor['NumberOfLaps'])) throw new Error(`Missing Lap: ${competitor['NumberOfLaps']}`)
+                    
+            if (dataJson['Competitors']) {
+                const competitors = dataJson['Competitors']
 
-                        if (competitor['BestLaptime'] && competitor['BestLaptime'] < bestOverallLaptime) setBestOverallLaptime(competitor['BestLaptime'])
-                        
-                        if (!registered) registerCompetitor(competitor)
+                for (let i=0; i < competitors.length; i++) {
+                    const competitor = competitors[i]
 
-                        if (competitor['CompetitorId'] !== driverIdentifier.id && competitor['Laps']) {
-                            if ((competitor['Laps'][0]['Position'] === (position + 1)) && competitor['Laps'][0]['Gap']) {
-                                setGapBehind(competitor['Laps'][0]['Gap'])
-                            }
+                    if (competitor['BestLaptime'] && competitor['BestLaptime'] < bestLapTime) setBestLapTime(competitor['BestLaptime'])
+                    
+                    if (!registered) registerCompetitor(competitor)
+
+                    if (competitor['CompetitorId'] !== driverIdentifier.id && competitor['Laps']) {
+                        if ((competitor['Laps'][0]['Position'] === (position + 1)) && competitor['Laps'][0]['Gap']) {
+                            setGapBehind(competitor['Laps'][0]['Gap'])
                         }
-
-                        // Stop early if we don't have the correct CompetitorId
-                        if (!driverIdentifier.id || competitor['CompetitorId'] !== driverIdentifier.id) return
-                        
-                        setSelectedDriverData(competitor)
                     }
+
+                    // Stop early if we don't have the correct CompetitorId
+                    if (!driverIdentifier.id || competitor['CompetitorId'] !== driverIdentifier.id) return
+                    
+                    setSelectedDriverData(competitor)
                 }
             }
         }
@@ -243,15 +269,15 @@ const useAlphaTimingSystem = (track: string, driverName: string) => {
 
     return {
         race_competitors: competitors, // display on <select>
+        driverEvent,
         display: {
-            lastLapTime,
-            previousBestLaps,
+            lapTime,
+            topThreeLaps,
             gap,
             gapBehind,
-            bestOverallLaptime,
+            bestLapTime,
             currentLapNumber,
             position,
-            driverEvent,
         },
     }
 }
