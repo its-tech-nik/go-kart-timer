@@ -4,7 +4,9 @@ import useWebSocket, { ReadyState } from 'react-use-websocket';
 import { calculateBestOverallLaptime } from "@/utils/calculateBestOverallTime"
 
 const useAlphaTimingSystem = (track: string, driverName: string) => {
-    const { sendJsonMessage, lastJsonMessage, getWebSocket, readyState } = useWebSocket('wss://ws-eu.pusher.com/app/3aaffebc8193ea83cb2f?protocol=7&client=js&version=3.1.0&flash=false')
+    // const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket('wss://ws-eu.pusher.com/app/3aaffebc8193ea83cb2f?protocol=7&client=js&version=3.1.0&flash=false')
+
+    const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket('ws://localhost:443')
 
     const [driverIdentifier, setDriverIdentifier] = useState({
         id: null,
@@ -81,9 +83,7 @@ const useAlphaTimingSystem = (track: string, driverName: string) => {
 
         if (selectedDriver['TakenChequered']) {
             setDriverEvent('finished_race')
-        }/* else if(driverEvent !== 'update') {
-            setDriverEvent('update')
-        }*/
+        }
         
         if (selectedDriver['Laps']) {
             const lap = selectedDriver['Laps'][0]
@@ -95,16 +95,19 @@ const useAlphaTimingSystem = (track: string, driverName: string) => {
 
                 // add to top 3 best laps
                 if (lap['LapTime'] && lap['LapTime'] < topThreeLaps[2].time) {
-                    setTopThreeLaps([
+                    const previousBestLap = topThreeLaps[0].time
+                    const sortedTopThreeLaps = [
                         topThreeLaps[0],
                         topThreeLaps[1],
                         {
                             time: lap['LapTime'],
                             lap: selectedDriver['NumberOfLaps'],
                         }
-                    ].sort((a, b) => a.time - b.time))
+                    ].sort((a, b) => a.time - b.time)
 
-                    setDriverEvent('new_best_lap')
+                    setTopThreeLaps(sortedTopThreeLaps)
+
+                    if (previousBestLap < Infinity && lap['LapTime'] === sortedTopThreeLaps[0].time) setDriverEvent('new_best_lap')
                 }
             }
 
@@ -112,6 +115,7 @@ const useAlphaTimingSystem = (track: string, driverName: string) => {
 
             if(lap['LapNumber']) setCurrentLapNumber(lap['LapNumber'])
         }
+
     }
 
     const getCompetitionData = async () => {
@@ -236,6 +240,8 @@ const useAlphaTimingSystem = (track: string, driverName: string) => {
             setCompetitors([])
             resetDriverMeasurements()
         } else if ((event === 'update' || event === 'updated_session') && data) {
+
+            setDriverEvent('update')
 
             const dataJson = JSON.parse(data)
 

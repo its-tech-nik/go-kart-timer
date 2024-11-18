@@ -88,6 +88,7 @@ export default function Home() {
     }
   }
 
+  // handle full screen events
   useEffect(() => {
     document.addEventListener('fullscreenchange', handleFullscreen)
 
@@ -170,6 +171,7 @@ export default function Home() {
               </select>
             )
           }
+          {driverEvent}
         </div>}
       </div>
       <div className="flex justify-center font-mono">
