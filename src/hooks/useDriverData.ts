@@ -2,42 +2,43 @@ import useAlphaTimerWebsocket from "@/hooks/useAlphaTimerWebsocket"
 import { useEffect, useState } from "react"
 
 export default (track: string, driverName: string) => {
-    const [competitors, setCompetitors] = useState([])
-    const [bestLap, setBestLap] = useState<number>(0)
-    const {
-        startCommunication,
-        reInitWebsocketConnection,
-        addPreviousBestLap,
-        calculateBestOverallLaptime,
-        result: {
-            driverEvent,
-            lastLapTime,
-            previousBestLaps,
-            gap,
-            gapBehind,
-            bestOverallLaptime,
-            currentLapNumber,
-            position,
-        },
-        setters: {
-            setGap,
-            setCurrentLapNumber,
-            setPosition,
-        }
-    } = useAlphaTimerWebsocket(track, driverName)
+  const [competitors, setCompetitors] = useState([])
+  const [bestLap, setBestLap] = useState<number>(0)
+  const {
+      startCommunication,
+      reInitWebsocketConnection,
+      addPreviousBestLap,
+      calculateBestOverallLaptime,
+      result: {
+          driverEvent,
+          lastLapTime,
+          previousBestLaps,
+          gap,
+          gapBehind,
+          bestOverallLaptime,
+          currentLapNumber,
+          position,
+      },
+      setters: {
+          setGap,
+          setCurrentLapNumber,
+          setPosition,
+      }
+  } = useAlphaTimerWebsocket(track, driverName)
 
-    const getCurrentCompetitionData = async () => {
-        if (!track) return
+  // PORTED
+  const getCurrentCompetitionData = async () => {
+      if (!track) return
 
-        const response = await fetch(`https://live.alphatiming.co.uk/${track}.json`)
+      const response = await fetch(`https://live.alphatiming.co.uk/${track}.json`)
 
-        const raceSetup = await response.json()
+      const raceSetup = await response.json()
 
-        setCompetitors(raceSetup['Competitors'])
-        calculateBestOverallLaptime(raceSetup['Competitors'])
+      setCompetitors(raceSetup['Competitors'])
+      calculateBestOverallLaptime(raceSetup['Competitors'])
 
-        return raceSetup['Competitors']
-    }
+      return raceSetup['Competitors']
+  }
 
   useEffect(() => {
     getCurrentCompetitionData()

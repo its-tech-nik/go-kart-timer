@@ -32,10 +32,12 @@ const useAlphaTimerWebsocket = (track: string, driverName: string) => {
         },
     ])
     const [driverEvent, setDriverEvent] = useState<string>('')
+    const [registered, setRegistered] = useState<boolean>(false)
 
     const lastRecordedSequenceNumber = useRef<number>(-1)
     const lastRecordedLapNumber = useRef<number>(-1)
 
+    // PORTED
     const startCommunication = (competitor: any) => {
         if (competitor) {
             setDriverDetails({
@@ -59,10 +61,6 @@ const useAlphaTimerWebsocket = (track: string, driverName: string) => {
         return sequence !== lastRecordedSequenceNumber.current++
     }
 
-    const reInitWebsocketConnection = () => {
-        console.log(driverDetails)
-    }
-
     const testForNoMissingLaps = (lap: number) => {
         if (lap === 1) lastRecordedLapNumber.current = 1
 
@@ -71,7 +69,13 @@ const useAlphaTimerWebsocket = (track: string, driverName: string) => {
 
         return lap !== lastRecordedLapNumber.current++
     }
+    
+    // PORTED
+    const reInitWebsocketConnection = () => {
+        console.log(driverDetails)
+    }
 
+    // PORTED
     const addPreviousBestLap = (previousLap: any) => {
         setPreviousBestLaps([
             previousBestLaps[0],
@@ -80,6 +84,7 @@ const useAlphaTimerWebsocket = (track: string, driverName: string) => {
         ].sort((a, b) => a.time - b.time))
     }
 
+    // PORTED
     const resetDriverMeasurements = () => {
         setPosition(0)
         setLastLapTime(0)
@@ -99,6 +104,7 @@ const useAlphaTimerWebsocket = (track: string, driverName: string) => {
         ])
     }
 
+    // PORTED
     useEffect(() => {
         const sd = null
 
@@ -143,6 +149,7 @@ const useAlphaTimerWebsocket = (track: string, driverName: string) => {
                          */
                         if (competitor['CompetitorName'] && competitor['CompetitorName'] === driverName) {
                             setDriverDetails({...driverDetails, id: competitor['CompetitorId']})
+                            setRegistered(true)
                         }
 
                         // Stop early if we don't have the correct CompetitorId
@@ -194,6 +201,7 @@ const useAlphaTimerWebsocket = (track: string, driverName: string) => {
         reInitWebsocketConnection,
         result: {
             ...driverDetails,
+            registered,
             position,
             lastLapTime,
             gap,
