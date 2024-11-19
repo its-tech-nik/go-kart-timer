@@ -1,6 +1,7 @@
 /* eslint-disable react/no-unescaped-entities */
 'use client';
 
+import { Suspense } from 'react'
 import { ChangeEvent, useEffect, useRef, useState } from "react";
 import NoSleep from 'nosleep.js';
 import { useSearchParams } from "next/navigation";
@@ -13,8 +14,7 @@ import useGeolocation from "react-hook-geolocation";
 
 import { findClosestTrack } from "@/utils/findClosestTrack"
 
-export default function Home() {
-  const [isFullScreen, setIsFullScreen] = useState<Boolean>(false)
+const Client = () => {  const [isFullScreen, setIsFullScreen] = useState<Boolean>(false)
   const keepScreenOn = useRef<NoSleep>()
   const audio = useRef<HTMLAudioElement>(null)
 
@@ -246,5 +246,13 @@ export default function Home() {
         </div>
       </div>
     </main>
+  )
+}
+
+export default function Home() {
+  return (
+    <Suspense>
+      <Client />
+    </Suspense>
   )
 }
