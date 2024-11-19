@@ -1,7 +1,7 @@
 /* eslint-disable react/no-unescaped-entities */
 'use client';
 
-import { ChangeEvent, useEffect, useRef, useState, useCallback } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 import NoSleep from 'nosleep.js';
 import { useSearchParams } from "next/navigation";
 import useAlphaTimingSystem from "@/hooks/useAlphaTimingSystem"

@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 
-import { calculateBestOverallLaptime } from "@/utils/calculateBestOverallTime"
-
 const useAlphaTimingSystem = (track: string, driverName: string) => {
     // const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket('wss://ws-eu.pusher.com/app/3aaffebc8193ea83cb2f?protocol=7&client=js&version=3.1.0&flash=false')
 
