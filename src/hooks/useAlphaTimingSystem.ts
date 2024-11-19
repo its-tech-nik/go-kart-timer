@@ -93,7 +93,7 @@ const useAlphaTimingSystem = (track: string, driverName: string) => {
             if (lap['LapTime']) {
                 setLapTime(lap['LapTime'])
 
-                // add to top 3 best laps
+                // add to top 3 laps
                 if (lap['LapTime'] && lap['LapTime'] < topThreeLaps[2].time) {
                     const previousBestLap = topThreeLaps[0].time
                     const sortedTopThreeLaps = [
@@ -234,22 +234,22 @@ const useAlphaTimingSystem = (track: string, driverName: string) => {
 
         if (!lastJsonMessage) return
 
-        const { data, event } = lastJsonMessage as any
+        const { data: rawData, event } = lastJsonMessage as any
 
         if (event === 'new_session') {
             setCompetitors([])
             resetDriverMeasurements()
-        } else if ((event === 'update' || event === 'updated_session') && data) {
+        } else if ((event === 'update' || event === 'updated_session') && rawData) {
 
             setDriverEvent('update')
 
-            const dataJson = JSON.parse(data)
+            const data = JSON.parse(rawData)
 
             // if (dataJson['Sequence'] && testForNoMissingPackets(dataJson['Sequence'])) throw new Error(`Missing Packet: ${dataJson['Sequence']}`)
             // if (competitor['NumberOfLaps'] && testForNoMissingLaps(competitor['NumberOfLaps'])) throw new Error(`Missing Lap: ${competitor['NumberOfLaps']}`)
                     
-            if (dataJson['Competitors']) {
-                const competitors = dataJson['Competitors']
+            if (data['Competitors']) {
+                const competitors = data['Competitors']
 
                 for (let i=0; i < competitors.length; i++) {
                     const competitor = competitors[i]
