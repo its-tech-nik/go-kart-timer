@@ -40,11 +40,13 @@ export default (track: string, driverName: string) => {
       return raceSetup['Competitors']
   }
 
+  // PORTED
   useEffect(() => {
     getCurrentCompetitionData()
   }, [track])
 
   // communicate with socket when we have the driver details
+  // REMOVED
   useEffect(() => {
     if (!driverName || !track || !competitors.length) return
 
@@ -64,6 +66,7 @@ export default (track: string, driverName: string) => {
     startCommunication(competitor)
   }, [driverName, competitors])
 
+  // REMOVED
   useEffect(() => {
     if (bestLap !== previousBestLaps[0].lap) {
       setBestLap(previousBestLaps[0].lap)

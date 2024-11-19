@@ -52,6 +52,7 @@ const useAlphaTimerWebsocket = (track: string, driverName: string) => {
         })
     }
 
+    //PORTED
     const testForNoMissingPackets = (sequence: number) => {
         if (sequence === 1) lastRecordedSequenceNumber.current = 1
 
@@ -61,6 +62,7 @@ const useAlphaTimerWebsocket = (track: string, driverName: string) => {
         return sequence !== lastRecordedSequenceNumber.current++
     }
 
+    // REMOVED
     const testForNoMissingLaps = (lap: number) => {
         if (lap === 1) lastRecordedLapNumber.current = 1
 

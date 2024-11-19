@@ -34,7 +34,6 @@ export default function Home() {
 
   useEffect(() => {
     if (!track && geolocation.latitude && geolocation.longitude) {
-      console.log('find it')
       const closestTrack = findClosestTrack(geolocation.latitude, geolocation.longitude, tracks)
 
       if (closestTrack) {
@@ -197,7 +196,6 @@ export default function Home() {
               </select>
             )
           }
-          {driverEvent}
         </div>}
       </div>
       <div className="flex justify-center font-mono">

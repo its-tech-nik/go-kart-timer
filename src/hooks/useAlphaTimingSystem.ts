@@ -96,8 +96,6 @@ const useAlphaTimingSystem = (track: string, driverName: string) => {
         setGap(selectedDriver['Gap'])
         setPosition(selectedDriver['GridPosition'])
         setCurrentLapNumber(selectedDriver['NumberOfLaps'])
-
-        console.log(selectedDriver)
     }
 
     const setSelectedDriverData = (selectedDriver: any) => {
@@ -280,7 +278,6 @@ const useAlphaTimingSystem = (track: string, driverName: string) => {
             if (data['SessionId']) sessionId.current = data['SessionId']
 
             if (data['Sequence'] && testForMissingPackets(data['Sequence'])) {
-                console.log('packet missing')
                 getSelectedDriverDataFromJson()
             }
                     
