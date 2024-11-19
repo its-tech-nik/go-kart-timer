@@ -9,6 +9,9 @@ import clsx from "clsx";
 import { formatTime } from "@/utils/formatTime";
 import { useTimer } from 'react-use-precision-timer';
 import tracks from './tracks.json'
+import useGeolocation from "react-hook-geolocation";
+
+import { findClosestTrack } from "@/utils/findClosestTrack"
 
 export default function Home() {
   const [isFullScreen, setIsFullScreen] = useState<Boolean>(false)
@@ -19,9 +22,32 @@ export default function Home() {
   const [track, setTrack] = useState<string>(queryParams.get('track') || '')
   const [driverName, setDriverName] = useState<string>(queryParams.get('driver') || '')
 
- const trackCodeToName = (code: string) => {
-  return tracks.find(track => track.code === code)?.track_name
- }
+  const trackCodeToName = (code: string) => {
+    return tracks.find(track => track.code === code)?.track_name
+  }
+
+  let locationPermissions = useRef<boolean>(true)
+
+  const geolocation = useGeolocation({
+    enableHighAccuracy: false,
+  }, () => {}, locationPermissions.current);
+
+  useEffect(() => {
+    if (!track && geolocation.latitude && geolocation.longitude) {
+      console.log('find it')
+      const closestTrack = findClosestTrack(geolocation.latitude, geolocation.longitude, tracks)
+
+      if (closestTrack) {
+        setTrack(closestTrack)
+        history.pushState({}, '', `?track=${closestTrack}`)
+      } else {
+        setTrack(queryParams.get('track') || '')
+      }
+    } else {
+      locationPermissions.current = false
+    }
+
+  }, [geolocation])
 
   const {
     race_competitors,

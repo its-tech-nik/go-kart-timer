@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 
 import { calculateBestOverallLaptime } from "@/utils/calculateBestOverallTime"
@@ -35,7 +35,9 @@ const useAlphaTimingSystem = (track: string, driverName: string) => {
     const [gap, setGap] = useState<number>(0)
     const [currentLapNumber, setCurrentLapNumber] = useState<number>(0)
     const [position, setPosition] = useState<number>(0)
-
+    // ==================================================
+    const lastRecordedSequenceNumber = useRef<number>(-1)
+    const sessionId = useRef<number>()
     const [driverEvent, setDriverEvent] = useState<string>('')
     const [registered, setRegistered] = useState<boolean>(false)
     const [socketCompetitors, setSocketCompetitors] = useState<any[]>([])
@@ -63,20 +65,39 @@ const useAlphaTimingSystem = (track: string, driverName: string) => {
         setRegistered(false)
     }
 
+    const getSelectedDriverDataFromJson = async () => {
+        if (!track) return
+
+        const response = await fetch(`https://live.alphatiming.co.uk/${track}/competitors/${driverIdentifier.id}.json?session_id=${sessionId.current}`)
+
+        const driverSetup = await response.json()
+
+        setSelectedDriverDataFromJson(driverSetup['Competitors'][0])
+        setLapTime(driverSetup['Competitors'][0]['LastLaptime'])
+
+        const quickestLaps = driverSetup['Competitors'][0]['Laps'].sort((lapA: any, lapB: any) => lapA['LapTime'] - lapB['LapTime']).slice(0, 3).map((lap: any) => ({lap: lap['LapNumber'], time: lap['LapTime']}))
+
+        setTopThreeLaps(quickestLaps)
+    }
+
     const setSelectedDriverDataFromJson = (selectedDriver: any) => {
-        setTopThreeLaps([
-            topThreeLaps[0],
-            topThreeLaps[1],
-            {
-                time: selectedDriver['BestLaptime'],
-                lap: selectedDriver['BestLapNumber'],
-            }
-        ].sort((a, b) => a.time - b.time))
+        
+        if (topThreeLaps.findIndex(topLap => topLap.lap === selectedDriver['BestLapNumber']) === -1) {
+            setTopThreeLaps([
+                topThreeLaps[0],
+                topThreeLaps[1],
+                {
+                    time: selectedDriver['BestLaptime'],
+                    lap: selectedDriver['BestLapNumber'],
+                }
+            ].sort((a, b) => a.time - b.time))
+        }
         setGapBehind(selectedDriver['Behind'])
         setGap(selectedDriver['Gap'])
         setPosition(selectedDriver['GridPosition'])
         setCurrentLapNumber(selectedDriver['NumberOfLaps'])
 
+        console.log(selectedDriver)
     }
 
     const setSelectedDriverData = (selectedDriver: any) => {
@@ -127,12 +148,14 @@ const useAlphaTimingSystem = (track: string, driverName: string) => {
         
         setCompetitors(raceSetup['Competitors'])
 
-        console.log(raceSetup['Competitors'])
-
         setBestLapTime(raceSetup['blt']['tm'])
 
         return raceSetup['Competitors']
     }
+
+    useEffect(() => {
+        getCompetitionData()
+    }, [track])
     
     const getDriverData = async (subscribeToDataChannel: boolean = true) => {
         const competition = await getCompetitionData()
@@ -229,6 +252,15 @@ const useAlphaTimingSystem = (track: string, driverName: string) => {
         }
     }
 
+    const testForMissingPackets = (sequence: number) => {
+        if (sequence === 1) lastRecordedSequenceNumber.current = 1
+
+        if (lastRecordedSequenceNumber.current < 0)
+            lastRecordedSequenceNumber.current = sequence
+
+        return sequence !== lastRecordedSequenceNumber.current++
+    }
+
     useEffect(() => {
         if (!driverName) return
 
@@ -245,8 +277,12 @@ const useAlphaTimingSystem = (track: string, driverName: string) => {
 
             const data = JSON.parse(rawData)
 
-            // if (dataJson['Sequence'] && testForNoMissingPackets(dataJson['Sequence'])) throw new Error(`Missing Packet: ${dataJson['Sequence']}`)
-            // if (competitor['NumberOfLaps'] && testForNoMissingLaps(competitor['NumberOfLaps'])) throw new Error(`Missing Lap: ${competitor['NumberOfLaps']}`)
+            if (data['SessionId']) sessionId.current = data['SessionId']
+
+            if (data['Sequence'] && testForMissingPackets(data['Sequence'])) {
+                console.log('packet missing')
+                getSelectedDriverDataFromJson()
+            }
                     
             if (data['Competitors']) {
                 const competitors = data['Competitors']
