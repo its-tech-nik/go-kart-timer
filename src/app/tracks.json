@@ -1,614 +1,614 @@
 [
     {
-        "code": "24hr",
-        "track_name": "24 Hour Karting Series",
+        "id": "24hr",
+        "value": "24 Hour Karting Series",
         "coordinates": {
             "latitude": 52.6297,
             "longitude": 1.2974
         }
     },
     {
-        "code": "3sisters",
-        "track_name": "3 Sisters",
+        "id": "3sisters",
+        "value": "3 Sisters",
         "coordinates": {
             "latitude": 53.528,
             "longitude": -2.654
         }
     },
     {
-        "code": "absolutelybristol",
-        "track_name": "Absolutely Karting - Bristol",
+        "id": "absolutelybristol",
+        "value": "Absolutely Karting - Bristol",
         "coordinates": {
             "latitude": 51.4621,
             "longitude": -2.574
         }
     },
     {
-        "code": "absolutelymaidenhead",
-        "track_name": "Absolutely Karting - Maidenhead",
+        "id": "absolutelymaidenhead",
+        "value": "Absolutely Karting - Maidenhead",
         "coordinates": {
             "latitude": 51.5186,
             "longitude": -0.719
         }
     },
     {
-        "code": "accesskarting",
-        "track_name": "Access Karting",
+        "id": "accesskarting",
+        "value": "Access Karting",
         "coordinates": {
             "latitude": 51.5095,
             "longitude": -0.595
         }
     },
     {
-        "code": "adventuresportswarwick",
-        "track_name": "Adventure Sports",
+        "id": "adventuresportswarwick",
+        "value": "Adventure Sports",
         "coordinates": {
             "latitude": 52.276,
             "longitude": -1.617
         }
     },
     {
-        "code": "afkc",
-        "track_name": "Armed Forces Karting Championship",
+        "id": "afkc",
+        "value": "Armed Forces Karting Championship",
         "coordinates": {
             "latitude": 51.5095,
             "longitude": -0.595
         }
     },
     {
-        "code": "angliakarting",
-        "track_name": "Anglia Indoor Karting (Downstairs)",
+        "id": "angliakarting",
+        "value": "Anglia Indoor Karting (Downstairs)",
         "coordinates": {
             "latitude": 52.059,
             "longitude": 1.148
         }
     },
     {
-        "code": "angliakartingup",
-        "track_name": "Anglia Indoor Karting (Upstairs)",
+        "id": "angliakartingup",
+        "value": "Anglia Indoor Karting (Upstairs)",
         "coordinates": {
             "latitude": 52.059,
             "longitude": 1.148
         }
     },
     {
-        "code": "avago",
-        "track_name": "Avago Karting",
+        "id": "avago",
+        "value": "Avago Karting",
         "coordinates": {
             "latitude": 53.492,
             "longitude": -1.292
         }
     },
     {
-        "code": "bayford",
-        "track_name": "Bayford Meadows - Hire Karts",
+        "id": "bayford",
+        "value": "Bayford Meadows - Hire Karts",
         "coordinates": {
             "latitude": 51.34,
             "longitude": 0.742
         }
     },
     {
-        "code": "bkc",
-        "track_name": "The Kart Championship",
+        "id": "bkc",
+        "value": "The Kart Championship",
         "coordinates": {
             "latitude": 51.5095,
             "longitude": -0.595
         }
     },
     {
-        "code": "bmb",
-        "track_name": "British Mini Bikes",
+        "id": "bmb",
+        "value": "British Mini Bikes",
         "coordinates": {
             "latitude": 51.5095,
             "longitude": -0.595
         }
     },
     {
-        "code": "bmkr",
-        "track_name": "Bayford Meadows - Owner Drivers",
+        "id": "bmkr",
+        "value": "Bayford Meadows - Owner Drivers",
         "coordinates": {
             "latitude": 51.34,
             "longitude": 0.742
         }
     },
     {
-        "code": "bpec",
-        "track_name": "British Prokart Endurance Championship",
+        "id": "bpec",
+        "value": "British Prokart Endurance Championship",
         "coordinates": {
             "latitude": 51.5095,
             "longitude": -0.595
         }
     },
     {
-        "code": "brentwood",
-        "track_name": "Brentwood Karting",
+        "id": "brentwood",
+        "value": "Brentwood Karting",
         "coordinates": {
             "latitude": 51.613,
             "longitude": 0.299
         }
     },
     {
-        "code": "bsecuk",
-        "track_name": "British Scooter Endurance Club",
+        "id": "bsecuk",
+        "value": "British Scooter Endurance Club",
         "coordinates": {
             "latitude": 51.5095,
             "longitude": -0.595
         }
     },
     {
-        "code": "buckmore",
-        "track_name": "Buckmore Park Karting",
+        "id": "buckmore",
+        "value": "Buckmore Park Karting",
         "coordinates": {
             "latitude": 51.334,
             "longitude": 0.515
         }
     },
     {
-        "code": "bukc",
-        "track_name": "British Universities Karting Championship",
+        "id": "bukc",
+        "value": "British Universities Karting Championship",
         "coordinates": {
             "latitude": 51.5095,
             "longitude": -0.595
         }
     },
     {
-        "code": "chkrc",
-        "track_name": "Cheshire Kart Racing Club",
+        "id": "chkrc",
+        "value": "Cheshire Kart Racing Club",
         "coordinates": {
             "latitude": 53.273,
             "longitude": -2.841
         }
     },
     {
-        "code": "ckc",
-        "track_name": "Camberley Kart Club",
+        "id": "ckc",
+        "value": "Camberley Kart Club",
         "coordinates": {
             "latitude": 51.34,
             "longitude": 0.742
         }
     },
     {
-        "code": "ckrc",
-        "track_name": "Cumbria Kart Racing Club",
+        "id": "ckrc",
+        "value": "Cumbria Kart Racing Club",
         "coordinates": {
             "latitude": 54.541,
             "longitude": -3.453
         }
     },
     {
-        "code": "clay",
-        "track_name": "Clay Pigeon (corporate)",
+        "id": "clay",
+        "value": "Clay Pigeon (corporate)",
         "coordinates": {
             "latitude": 50.8,
             "longitude": -2.57
         }
     },
     {
-        "code": "club100",
-        "track_name": "CLUB100",
+        "id": "club100",
+        "value": "CLUB100",
         "coordinates": {
             "latitude": 51.5095,
             "longitude": -0.595
         }
     },
     {
-        "code": "cpkc",
-        "track_name": "Clay Pigeon Kart Club",
+        "id": "cpkc",
+        "value": "Clay Pigeon Kart Club",
         "coordinates": {
             "latitude": 50.8,
             "longitude": -2.57
         }
     },
     {
-        "code": "dkrc",
-        "track_name": "Dunkeswell Kart Racing Club",
+        "id": "dkrc",
+        "value": "Dunkeswell Kart Racing Club",
         "coordinates": {
             "latitude": 50.876,
             "longitude": -3.234
         }
     },
     {
-        "code": "dragon",
-        "track_name": "Dragon Kart Club",
+        "id": "dragon",
+        "value": "Dragon Kart Club",
         "coordinates": {
             "latitude": 53.116,
             "longitude": -3.47
         }
     },
     {
-        "code": "drs",
-        "track_name": "Daniel Ricciardo Series",
+        "id": "drs",
+        "value": "Daniel Ricciardo Series",
         "coordinates": {
             "latitude": 51.5095,
             "longitude": -0.595
         }
     },
     {
-        "code": "dunkeswell",
-        "track_name": "Dunkeswell Adventure Park",
+        "id": "dunkeswell",
+        "value": "Dunkeswell Adventure Park",
         "coordinates": {
             "latitude": 50.876,
             "longitude": -3.234
         }
     },
     {
-        "code": "elloughpark",
-        "track_name": "Ellough Park",
+        "id": "elloughpark",
+        "value": "Ellough Park",
         "coordinates": {
             "latitude": 52.44,
             "longitude": 1.58
         }
     },
     {
-        "code": "eps",
-        "track_name": "Endurance Prokart Series (Clay Pigeon)",
+        "id": "eps",
+        "value": "Endurance Prokart Series (Clay Pigeon)",
         "coordinates": {
             "latitude": 50.8,
             "longitude": -2.57
         }
     },
     {
-        "code": "f100",
-        "track_name": "F100uk - Spirit of the 90s",
+        "id": "f100",
+        "value": "F100uk - Spirit of the 90s",
         "coordinates": {
             "latitude": 51.5095,
             "longitude": -0.595
         }
     },
     {
-        "code": "fekc",
-        "track_name": "Forest Edge Kart Club",
+        "id": "fekc",
+        "value": "Forest Edge Kart Club",
         "coordinates": {
             "latitude": 51.209,
             "longitude": -1.514
         }
     },
     {
-        "code": "fkc",
-        "track_name": "Fulbeck Kart Club",
+        "id": "fkc",
+        "value": "Fulbeck Kart Club",
         "coordinates": {
             "latitude": 53.04,
             "longitude": -0.64
         }
     },
     {
-        "code": "formulafast",
-        "track_name": "Formula Fast",
+        "id": "formulafast",
+        "value": "Formula Fast",
         "coordinates": {
             "latitude": 52.024,
             "longitude": -0.759
         }
     },
     {
-        "code": "freetech",
-        "track_name": "Freetech Enduro",
+        "id": "freetech",
+        "value": "Freetech Enduro",
         "coordinates": {
             "latitude": 51.5095,
             "longitude": -0.595
         }
     },
     {
-        "code": "fss",
-        "track_name": "Fulbeck Sprint Series",
+        "id": "fss",
+        "value": "Fulbeck Sprint Series",
         "coordinates": {
             "latitude": 53.04,
             "longitude": -0.64
         }
     },
     {
-        "code": "gkluk",
-        "track_name": "Global Karting League",
+        "id": "gkluk",
+        "value": "Global Karting League",
         "coordinates": {
             "latitude": 51.5095,
             "longitude": -0.595
         }
     },
     {
-        "code": "guernsey",
-        "track_name": "Karting Guernsey",
+        "id": "guernsey",
+        "value": "Karting Guernsey",
         "coordinates": {
             "latitude": 49.465,
             "longitude": -2.585
         }
     },
     {
-        "code": "gyg",
-        "track_name": "GYG Karting",
+        "id": "gyg",
+        "value": "GYG Karting",
         "coordinates": {
             "latitude": 53.02,
             "longitude": -3.51
         }
     },
     {
-        "code": "hallett",
-        "track_name": "Hallett Motor Racing Circuit",
+        "id": "hallett",
+        "value": "Hallett Motor Racing Circuit",
         "coordinates": {
             "latitude": 36.185,
             "longitude": -96.339
         }
     },
     {
-        "code": "hooton",
-        "track_name": "Hooton Park",
+        "id": "hooton",
+        "value": "Hooton Park",
         "coordinates": {
             "latitude": 53.3,
             "longitude": -2.96
         }
     },
     {
-        "code": "hootonik",
-        "track_name": "Hooton Park Indi Kart Series",
+        "id": "hootonik",
+        "value": "Hooton Park Indi Kart Series",
         "coordinates": {
             "latitude": 53.3,
             "longitude": -2.96
         }
     },
     {
-        "code": "hootonikc",
-        "track_name": "Hooton IKC",
+        "id": "hootonikc",
+        "value": "Hooton IKC",
         "coordinates": {
             "latitude": 53.3,
             "longitude": -2.96
         }
     },
     {
-        "code": "iom",
-        "track_name": "Isle of Man",
+        "id": "iom",
+        "value": "Isle of Man",
         "coordinates": {
             "latitude": 54.236,
             "longitude": -4.548
         }
     },
     {
-        "code": "ipkc",
-        "track_name": "Independent Privateers Kart Championship",
+        "id": "ipkc",
+        "value": "Independent Privateers Kart Championship",
         "coordinates": {
             "latitude": 51.5095,
             "longitude": -0.595
         }
     },
     {
-        "code": "jkc",
-        "track_name": "Jersey Kart Club",
+        "id": "jkc",
+        "value": "Jersey Kart Club",
         "coordinates": {
             "latitude": 49.213,
             "longitude": -2.135
         }
     },
     {
-        "code": "knockhill",
-        "track_name": "Knockhill Karting",
+        "id": "knockhill",
+        "value": "Knockhill Karting",
         "coordinates": {
             "latitude": 56.11,
             "longitude": -3.5
         }
     },
     {
-        "code": "lakeside",
-        "track_name": "Lakeside Karting",
+        "id": "lakeside",
+        "value": "Lakeside Karting",
         "coordinates": {
             "latitude": 51.49,
             "longitude": 0.29
         }
     },
     {
-        "code": "lgk",
-        "track_name": "Let's Go Karting (Rowrah)",
+        "id": "lgk",
+        "value": "Let's Go Karting (Rowrah)",
         "coordinates": {
             "latitude": 54.541,
             "longitude": -3.453
         }
     },
     {
-        "code": "mbkc",
-        "track_name": "Manchester & Buxton Kart Club",
+        "id": "mbkc",
+        "value": "Manchester & Buxton Kart Club",
         "coordinates": {
             "latitude": 53.273,
             "longitude": -2.841
         }
     },
     {
-        "code": "mcckartplex",
-        "track_name": "MCC Kart Plex",
+        "id": "mcckartplex",
+        "value": "MCC Kart Plex",
         "coordinates": {
             "latitude": 39.123,
             "longitude": -84.515
         }
     },
     {
-        "code": "mccofcincinnati",
-        "track_name": "MCC of Cincinnati",
+        "id": "mccofcincinnati",
+        "value": "MCC of Cincinnati",
         "coordinates": {
             "latitude": 39.123,
             "longitude": -84.515
         }
     },
     {
-        "code": "midlandkarting",
-        "track_name": "Midland Karting",
+        "id": "midlandkarting",
+        "value": "Midland Karting",
         "coordinates": {
             "latitude": 52.75,
             "longitude": -1.9
         }
     },
     {
-        "code": "mvkc",
-        "track_name": "Medway Valley Kart Club",
+        "id": "mvkc",
+        "value": "Medway Valley Kart Club",
         "coordinates": {
             "latitude": 51.34,
             "longitude": 0.742
         }
     },
     {
-        "code": "nekc",
-        "track_name": "Northeast Kart Challenge",
+        "id": "nekc",
+        "value": "Northeast Kart Challenge",
         "coordinates": {
             "latitude": 54.541,
             "longitude": -3.453
         }
     },
     {
-        "code": "nika",
-        "track_name": "North of Ireland Karting Association",
+        "id": "nika",
+        "value": "North of Ireland Karting Association",
         "coordinates": {
             "latitude": 54.6,
             "longitude": -5.93
         }
     },
     {
-        "code": "nkc",
-        "track_name": "National Kart Cup",
+        "id": "nkc",
+        "value": "National Kart Cup",
         "coordinates": {
             "latitude": 51.5095,
             "longitude": -0.595
         }
     },
     {
-        "code": "okc",
-        "track_name": "Orlando Kart Center",
+        "id": "okc",
+        "value": "Orlando Kart Center",
         "coordinates": {
             "latitude": 28.45,
             "longitude": -81.37
         }
     },
     {
-        "code": "qleisure",
-        "track_name": "Q Leisure",
+        "id": "qleisure",
+        "value": "Q Leisure",
         "coordinates": {
             "latitude": 50.9,
             "longitude": -0.15
         }
     },
     {
-        "code": "raceviewkarting",
-        "track_name": "Raceview Karting",
+        "id": "raceviewkarting",
+        "value": "Raceview Karting",
         "coordinates": {
             "latitude": 54.6,
             "longitude": -5.93
         }
     },
     {
-        "code": "railwaykarting",
-        "track_name": "Railway Karting",
+        "id": "railwaykarting",
+        "value": "Railway Karting",
         "coordinates": {
             "latitude": 51.5095,
             "longitude": -0.595
         }
     },
     {
-        "code": "redlodge",
-        "track_name": "Red Lodge",
+        "id": "redlodge",
+        "value": "Red Lodge",
         "coordinates": {
             "latitude": 52.3,
             "longitude": 0.4
         }
     },
     {
-        "code": "retro",
-        "track_name": "Retro Kart Championship"
+        "id": "retro",
+        "value": "Retro Kart Championship"
     },
     {
-        "code": "rhkc",
-        "track_name": "Rye House Kart Club"
+        "id": "rhkc",
+        "value": "Rye House Kart Club"
     },
     {
-        "code": "rkc",
-        "track_name": "Rissington Kart Club"
+        "id": "rkc",
+        "value": "Rissington Kart Club"
     },
     {
-        "code": "rogueracing",
-        "track_name": "Rogue Racing"
+        "id": "rogueracing",
+        "value": "Rogue Racing"
     },
     {
-        "code": "rokcupusa",
-        "track_name": "ROK Cup USA"
+        "id": "rokcupusa",
+        "value": "ROK Cup USA"
     },
     {
-        "code": "rye",
-        "track_name": "Rye House"
+        "id": "rye",
+        "value": "Rye House"
     },
     {
-        "code": "sgp",
-        "track_name": "Teesside Sprint Series"
+        "id": "sgp",
+        "value": "Teesside Sprint Series"
     },
     {
-        "code": "silverstone",
-        "track_name": "Silverstone Experience Centre"
+        "id": "silverstone",
+        "value": "Silverstone Experience Centre"
     },
     {
-        "code": "sira",
-        "track_name": "Southern Indiana Racing Association"
+        "id": "sira",
+        "value": "Southern Indiana Racing Association"
     },
     {
-        "code": "skrc",
-        "track_name": "Shenington Kart Racing Club"
+        "id": "skrc",
+        "value": "Shenington Kart Racing Club"
     },
     {
-        "code": "starschamp",
-        "track_name": "Stars Championship Series"
+        "id": "starschamp",
+        "value": "Stars Championship Series"
     },
     {
-        "code": "stretton",
-        "track_name": "Stretton Circuit"
+        "id": "stretton",
+        "value": "Stretton Circuit"
     },
     {
-        "code": "superone",
-        "track_name": "Super One"
+        "id": "superone",
+        "value": "Super One"
     },
     {
-        "code": "surbitoncadet",
-        "track_name": "Surbiton Raceway (Cadet Track)"
+        "id": "surbitoncadet",
+        "value": "Surbiton Raceway (Cadet Track)"
     },
     {
-        "code": "surbitonmain",
-        "track_name": "Surbiton Raceway (Main Track)"
+        "id": "surbitonmain",
+        "value": "Surbiton Raceway (Main Track)"
     },
     {
-        "code": "swkc",
-        "track_name": "South Wales Karting Centre"
+        "id": "swkc",
+        "value": "South Wales Karting Centre"
     },
     {
-        "code": "teamkarting",
-        "track_name": "Team Karting"
+        "id": "teamkarting",
+        "value": "Team Karting"
     },
     {
-        "code": "teesside",
-        "track_name": "Teesside Karting"
+        "id": "teesside",
+        "value": "Teesside Karting"
     },
     {
-        "code": "thruxton",
-        "track_name": "Thruxton Karting"
+        "id": "thruxton",
+        "value": "Thruxton Karting"
     },
     {
-        "code": "tkc",
-        "track_name": "Tullyallen Kart Club"
+        "id": "tkc",
+        "value": "Tullyallen Kart Club"
     },
     {
-        "code": "ukc",
-        "track_name": "Ultimate Karting Championship"
+        "id": "ukc",
+        "value": "Ultimate Karting Championship"
     },
     {
-        "code": "ukks",
-        "track_name": "UK Kart Series"
+        "id": "ukks",
+        "value": "UK Kart Series"
     },
     {
-        "code": "umc",
-        "track_name": "Utah Motorsports Campus"
+        "id": "umc",
+        "value": "Utah Motorsports Campus"
     },
     {
-        "code": "whilton",
-        "track_name": "Whilton Mill (corporate)"
+        "id": "whilton",
+        "value": "Whilton Mill (corporate)"
     },
     {
-        "code": "wmkc",
-        "track_name": "Whilton Mill Kart Club"
+        "id": "wmkc",
+        "value": "Whilton Mill Kart Club"
     },
     {
-        "code": "wombwellkarting",
-        "track_name": "Wombwell Karting"
+        "id": "wombwellkarting",
+        "value": "Wombwell Karting"
     },
     {
-        "code": "wrp",
-        "track_name": "Whiteland Raceway Park"
+        "id": "wrp",
+        "value": "Whiteland Raceway Park"
     }
 ]

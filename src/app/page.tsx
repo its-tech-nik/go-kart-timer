@@ -13,18 +13,16 @@ import tracks from './tracks.json'
 import useGeolocation from "react-hook-geolocation";
 
 import { findClosestTrack } from "@/utils/findClosestTrack"
+import { ItemSelectTrack, ItemSelectDriver } from '@/components/ItemSelect';
 
-const Client = () => {  const [isFullScreen, setIsFullScreen] = useState<Boolean>(false)
+const Client = () => {
+  const [isFullScreen, setIsFullScreen] = useState<Boolean>(false)
   const keepScreenOn = useRef<NoSleep>()
   const audio = useRef<HTMLAudioElement>(null)
 
   const queryParams = useSearchParams()
   const [track, setTrack] = useState<string>(queryParams.get('track') || '')
   const [driverName, setDriverName] = useState<string>(queryParams.get('driver') || '')
-
-  const trackCodeToName = (code: string) => {
-    return tracks.find(track => track.code === code)?.track_name
-  }
 
   let locationPermissions = useRef<boolean>(true)
 
@@ -131,8 +129,10 @@ const Client = () => {  const [isFullScreen, setIsFullScreen] = useState<Boolean
     }
   }, [])
 
-  const competitorSelected = (event: ChangeEvent<HTMLSelectElement>) => {
-    const competitor = race_competitors[parseInt(event.target.value)]
+  const competitorSelected = (selectedDriver: any) => {
+    console.log({selectedDriver})
+    const id = race_competitors.findIndex((competitor: any) => competitor['CompetitorName'] === selectedDriver)
+    const competitor = race_competitors[id]
     if (!competitor) return
 
     setDriverName(competitor?.['CompetitorName'])
@@ -140,15 +140,13 @@ const Client = () => {  const [isFullScreen, setIsFullScreen] = useState<Boolean
     history.pushState({}, '', `?track=${track}&driver=${competitor?.['CompetitorName']}`)
   }
 
-  const clearTrackSelection = () => {
-    clearDriver()
-    setTrack('')
-  }
+  const selectTrack = (selectedTrack: any) => {
+    if (track === selectedTrack) return
 
-  const selectTrack = (event: ChangeEvent<HTMLSelectElement>) => {
-    setTrack(event.target.value)
-    setDriverName('')
-    history.pushState({}, '', `?track=${event.target.value}`)
+    console.log(selectedTrack)
+    setTrack(selectedTrack)
+    clearDriver()
+    history.pushState({}, '', `?track=${selectedTrack}`)
   }
 
   const clearDriver = () => {
@@ -166,37 +164,11 @@ const Client = () => {  const [isFullScreen, setIsFullScreen] = useState<Boolean
         <audio ref={audio} src="./sounds/ding_sound.mp3" />
         {!isFullScreen && <button className="md:hidden bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded place-self-stretch" onClick={() => document.documentElement.requestFullscreen()}>Fullscreen</button>}
         <div className="col-start-3">
-          <span>Track: </span>
-          {track ? (
-              <span onClick={clearTrackSelection}>{trackCodeToName(track)}</span>
-            ) : (
-              <select onChange={selectTrack} className="bg-green-600 w-40">
-                <option value="">Select Track</option>
-                {tracks.map(({ code, track_name }) => {
-                  return (
-                    <option key={code} value={code}>{track_name}</option>
-                  )
-                })}
-              </select>
-            )
-          }
+          <ItemSelectTrack  value={track} tracks={tracks} onChange={selectTrack} />
         </div>
-        {track && <div>
-          <span>Driver: </span>
-          { driverName ? (
-              <span onClick={clearDriver} className="pe-3">{ driverName }</span>
-            ) : (
-              <select onChange={competitorSelected} className="bg-green-600 w-40">
-                <option value="">Select Driver</option>
-                {race_competitors.map((competitor, index) => {
-                  return (
-                    <option key={competitor['CompetitorId']} value={index}>{competitor['CompetitorName']}</option>
-                  )
-                })}
-              </select>
-            )
-          }
-        </div>}
+        <div className="col-start-3">
+          {track && <ItemSelectDriver value={driverName} values={race_competitors} onChange={competitorSelected} />}
+        </div>
       </div>
       <div className="flex justify-center font-mono">
         <span className="max-sm:text-8xl text-9xl">{ time < 5000 && lapTime !== 0 ? formatTime(lapTime) : formatTime(time) }</span>

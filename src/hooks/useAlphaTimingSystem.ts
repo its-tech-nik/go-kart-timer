@@ -189,9 +189,7 @@ const useAlphaTimingSystem = (track: string, driverName: string) => {
             // pull json and start the process from the beginning
 
     useEffect(() => {
-        if (!driverName) {
-            resetDriverMeasurements()
-        }
+        resetDriverMeasurements()
         getDriverData(readyState !== ReadyState.OPEN)
     }, [driverName])
         

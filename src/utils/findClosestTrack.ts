@@ -31,7 +31,7 @@ function findClosestTrack(userLat: number, userLon: number, tracks: any[]) {
 
     });
 
-    return closestTrack?.code;
+    return closestTrack?.id;
 }
 
 export { findClosestTrack }
