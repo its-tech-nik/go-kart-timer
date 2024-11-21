@@ -142,9 +142,9 @@ const useAlphaTimingSystem = (track: string, driverName: string) => {
 
         const raceSetup = await response.json()
         
-        setCompetitors(raceSetup['Competitors'])
+        setCompetitors(raceSetup['Competitors'].map((competitor: any) => ({...competitor, id: competitor['CompetitorId'], value: competitor['CompetitorName']})) || [])
 
-        setBestLapTime(raceSetup['blt']['tm'])
+        setBestLapTime(raceSetup['blt']?.['tm'] || 0)
 
         return raceSetup['Competitors']
     }

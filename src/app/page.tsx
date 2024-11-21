@@ -129,9 +129,8 @@ const Client = () => {
     }
   }, [])
 
-  const competitorSelected = (selectedDriver: any) => {
-    console.log({selectedDriver})
-    const id = race_competitors.findIndex((competitor: any) => competitor['CompetitorName'] === selectedDriver)
+  const competitorSelected = (selectedDriver: string) => {
+    const id = race_competitors.findIndex((competitor: any) => competitor['CompetitorId'] === parseInt(selectedDriver))
     const competitor = race_competitors[id]
     if (!competitor) return
 
@@ -140,7 +139,7 @@ const Client = () => {
     history.pushState({}, '', `?track=${track}&driver=${competitor?.['CompetitorName']}`)
   }
 
-  const selectTrack = (selectedTrack: any) => {
+  const selectTrack = (selectedTrack: string) => {
     if (track === selectedTrack) return
 
     console.log(selectedTrack)
@@ -167,7 +166,7 @@ const Client = () => {
           <ItemSelectTrack  value={track} tracks={tracks} onChange={selectTrack} />
         </div>
         <div className="col-start-3">
-          {track && <ItemSelectDriver value={driverName} values={race_competitors} onChange={competitorSelected} />}
+          {track && <ItemSelectDriver value={driverName} drivers={race_competitors} onChange={competitorSelected} />}
         </div>
       </div>
       <div className="flex justify-center font-mono">
@@ -224,6 +223,10 @@ const Client = () => {
 export default function Home() {
   return (
     <Suspense>
+      <meta name="viewport" content="height=device-height, 
+                      width=device-width, initial-scale=1.0, 
+                      minimum-scale=1.0, maximum-scale=1.0, 
+                      user-scalable=no, target-densitydpi=device-dpi"></meta>
       <Client />
     </Suspense>
   )
