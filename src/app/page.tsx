@@ -1,7 +1,7 @@
 /* eslint-disable react/no-unescaped-entities */
 'use client';
 
-import { Suspense } from 'react'
+import { Suspense, useMemo } from 'react'
 import { ChangeEvent, useEffect, useRef, useState } from "react";
 import NoSleep from 'nosleep.js';
 import { useSearchParams } from "next/navigation";
@@ -13,7 +13,7 @@ import tracks from './tracks.json'
 import useGeolocation from "react-hook-geolocation";
 
 import { findClosestTrack } from "@/utils/findClosestTrack"
-import { ItemSelectTrack, ItemSelectDriver } from '@/components/ItemSelect';
+import { ItemSelectTrack, ItemSelectDriver, ItemSelect } from '@/components/ItemSelect';
 
 const Client = () => {
   const [isFullScreen, setIsFullScreen] = useState<Boolean>(false)
@@ -162,12 +162,8 @@ const Client = () => {
       <div className="flex gap-3">
         <audio ref={audio} src="./sounds/ding_sound.mp3" />
         {!isFullScreen && <button className="md:hidden bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded place-self-stretch" onClick={() => document.documentElement.requestFullscreen()}>Fullscreen</button>}
-        <div className="col-start-3">
-          <ItemSelectTrack  value={track} tracks={tracks} onChange={selectTrack} />
-        </div>
-        <div className="col-start-3">
-          {track && <ItemSelectDriver value={driverName} drivers={race_competitors} onChange={competitorSelected} />}
-        </div>
+        <ItemSelectTrack  value={track} tracks={tracks} onChange={selectTrack} />
+        <ItemSelectDriver value={driverName} drivers={race_competitors} onChange={competitorSelected} />
       </div>
       <div className="flex justify-center font-mono">
         <span className="max-sm:text-8xl text-9xl">{ time < 5000 && lapTime !== 0 ? formatTime(lapTime) : formatTime(time) }</span>
@@ -223,10 +219,6 @@ const Client = () => {
 export default function Home() {
   return (
     <Suspense>
-      <meta name="viewport" content="height=device-height, 
-                      width=device-width, initial-scale=1.0, 
-                      minimum-scale=1.0, maximum-scale=1.0, 
-                      user-scalable=no, target-densitydpi=device-dpi"></meta>
       <Client />
     </Suspense>
   )
