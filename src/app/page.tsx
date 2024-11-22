@@ -13,7 +13,7 @@ import tracks from './tracks.json'
 import useGeolocation from "react-hook-geolocation";
 
 import { findClosestTrack } from "@/utils/findClosestTrack"
-import { ItemSelectTrack, ItemSelectDriver, ItemSelect } from '@/components/ItemSelect';
+import { ItemSelectTrack, ItemSelectDriver } from '@/components/ItemSelect';
 
 const Client = () => {
   const [isFullScreen, setIsFullScreen] = useState<Boolean>(false)
@@ -159,20 +159,71 @@ const Client = () => {
       'h-full flex flex-col transition-colors duration-500': true,
       'bg-green-700' : newBest,
     })}>
-      <div className="flex gap-3">
+      <div className="flex justify-end items-center font-mono mx-5 gap-5">
         <audio ref={audio} src="./sounds/ding_sound.mp3" />
-        {!isFullScreen && <button className="md:hidden bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded place-self-stretch" onClick={() => document.documentElement.requestFullscreen()}>Fullscreen</button>}
-        <ItemSelectTrack  value={track} tracks={tracks} onChange={selectTrack} />
-        <ItemSelectDriver value={driverName} drivers={race_competitors} onChange={competitorSelected} />
+        {!isFullScreen && <button className="md:hidden bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 pl-4 pr-7 rounded whitespace-nowrap mt-3" onClick={() => document.documentElement.requestFullscreen()}>
+          <span>Drive Mode</span> <img className="inline mb-0.5" src = "./steering.svg"  width="20" height="20" alt="My Happy SVG"/>
+        </button>}
+
+        {/* <div className="flex justify-around font-mono grow gap-10 max-sm:hidden">
+          <div className="font-bold flex gap-3 text-3xl">
+            <span>BLT:</span>
+            <span>{ formatTime(bestLapTime !== Infinity ? bestLapTime : 0) }</span>
+          </div>
+          <div className="font-bold flex gap-3 text-3xl">
+            <span>Gap:</span>
+            <span>{ gap }</span>
+          </div>
+          <div className="font-bold flex gap-3 text-3xl">
+            <span>Beh:</span>
+            <span>{ gapBehind }</span>
+          </div>
+        </div> */}
+        <div className="flex max-sm:hidden">
+          <div>
+            <span className="mt-2.5 text-5xl">L</span>
+            <span className="text-6xl">{ currentLapNumber }</span>
+          </div>
+          <div>
+            <span className="mb-1 text-5xl">P</span>
+            <span className="text-6xl">{ position }</span>
+          </div>
+        </div>
       </div>
-      <div className="flex justify-center font-mono">
-        <span className="max-sm:text-8xl text-9xl">{ time < 5000 && lapTime !== 0 ? formatTime(lapTime) : formatTime(time) }</span>
+      <div className="flex justify-center font-mono max-sm:my-16 md:mt-4">
+        <span className="max-sm:text-8xl text-9xl font-mono">{ time < 5000 && lapTime !== 0 ? formatTime(lapTime) : formatTime(time) }</span>
       </div>
-      <div className="flex max-sm:flex-col grow mt-3">
+      <div className="flex max-sm:flex-col mx-5 max-sm:grow">
         <div className="max-sm:basis-2/4 basis-3/4">
-          <span className="pl-9">Best Laps:</span>
-          <div className="flex flex-col items-center">
-            { topThreeLaps.map(({ time, lap }: any, index: number) => {
+          <span>Top Laps:</span>
+          <div className="flex flex-col items-center max-sm:mt-4">
+            {topThreeLaps.map(({ time, lap }: any, index: number) => {
+
+              if (time === Infinity) return
+
+              return (
+                <div className="flex font-mono" key={`${index}-${time}`}>
+                  <span className="text-5xl">{ formatTime(time) }</span>
+                  <div className="pl-3 self-end">
+                    <span>L{ lap }</span>
+                  </div>
+                </div>
+              )
+            })}
+            {topThreeLaps.map(({ time, lap }: any, index: number) => {
+
+              if (time === Infinity) return
+
+              return (
+                <div className="flex font-mono" key={`${index}-${time}`}>
+                  <span className="text-5xl">{ formatTime(time) }</span>
+                  <div className="pl-3 self-end">
+                    <span>L{ lap }</span>
+                  </div>
+                </div>
+              )
+            })}
+            {topThreeLaps.map(({ time, lap }: any, index: number) => {
 
               if (time === Infinity) return
 
@@ -187,31 +238,36 @@ const Client = () => {
             })}
           </div>
         </div>
-        <div className="stats flex basis-1/4 flex-col items-center font-mono">
-          <div className="font-bold w-full grow flex gap-3 justify-between text-3xl mr-5">
-            <span>Gap:</span>
-            <span>{ gap }</span>
+
+        <div className="flex flex-col justify-evenly grow md:hidden">
+          <div>
+            <ItemSelectTrack  value={track} tracks={tracks} onChange={selectTrack} />
           </div>
-          <div className="font-bold w-full grow flex gap-3 justify-between text-3xl mr-5">
-            <span>Beh:</span>
-            <span>{ gapBehind }</span>
+          <div>
+            <ItemSelectDriver value={driverName} drivers={race_competitors} onChange={competitorSelected} />
           </div>
-          <div className="font-bold w-full grow flex gap-3 justify-between text-3xl mr-5">
-            <span>BLT:</span>
-            <span>{ formatTime(bestLapTime !== Infinity ? bestLapTime : 0) }</span>
-          </div>
-          <div className="flex gap-3">
-            <div>
-              <span className="mt-2.5 text-5xl">L</span>
-              <span className="text-6xl">{ currentLapNumber }</span>
+            
+        </div>
+
+        <div className="stats flex basis-1/4 flex-col items-center font-mono mr-5 max-sm:hidden">
+          <span className="invisible">Stats:</span>
+          <div>
+            <div className="flex gap-3 justify-between text-5xl">
+              <span>Gap:</span>
+              <span>{ gap }</span>
             </div>
-            <div>
-              <span className="mb-1 text-5xl">P</span>
-              <span className="text-6xl">{ position }</span>
+            <div className="flex gap-3 justify-between text-5xl">
+              <span>Beh:</span>
+              <span>{ gapBehind }</span>
+            </div>
+            <div className="flex gap-3 justify-between text-5xl">
+              <span>BLT:</span>
+              <span>{ formatTime(bestLapTime !== Infinity ? bestLapTime : 0) }</span>
             </div>
           </div>
         </div>
       </div>
+
     </main>
   )
 }

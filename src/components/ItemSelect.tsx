@@ -9,7 +9,7 @@ const ItemSelectTrack = (props: any) => {
 
     return (
         <div>
-            <ItemSelect name={"Tracks"} id={props.value} value={trackCodeToName} values={props.tracks} onChange={props.onChange} />
+            <ItemSelect name={"Track"} id={props.value} value={trackCodeToName} values={props.tracks} onChange={props.onChange} />
         </div>
     )
 }
@@ -95,8 +95,6 @@ const ItemSelect = (props: any) => {
         clicked.current = false
         const options = document.getElementById('options')
 
-        // document.body.classList.toggle('blur')
-
         if (!options) return
 
         options.addEventListener('scrollend', scrollEndEvent)
@@ -161,7 +159,7 @@ const ItemSelect = (props: any) => {
     return (
         <div>
             <div onClick={() => setActiveSelection(true)}>
-                {props.name}:<br/> {props.value}
+                {props.name}:<br/> <span className="whitespace-nowrap truncate">{props.value}</span>
             </div>
             {
                 activeSelection &&
@@ -197,34 +195,3 @@ const ItemSelect = (props: any) => {
 }
 
 export { ItemSelectTrack, ItemSelectDriver }
-
-// activeSelection &&
-// <div className="absolute w-full h-full overflow-hidden top-0 left-0  ">
-//     <div className="w-full h-full">
-//         <div id="selection-area" className=" z-10 ">
-//         </div>
-//         <div className="bg-[rgb(28,28,30)] bottom-0 fixed w-full h-20 z-10 flex justify-evenly items-center">
-//             <button className="w-20 h-16 rounded-lg bg-red-800 flex justify-center items-center" onClick={() => setActiveSelection(false)}>
-//                 <img src = "./cross.svg" width="34" height="34" alt="My Happy SVG"/>
-//             </button>
-//             <button className="w-20 h-16 rounded-lg bg-green-900 flex justify-center items-center" onClick={() => selectItem(highlightedElement())}>
-//                 <img src = "./tick.svg"  width="20" height="20" alt="My Happy SVG"/>
-//             </button>
-//         </div>
-//         <div onClick={selectHighlighted} id="options" className="h-full py-[50vh] overflow-y-scroll snap-y snap-proximity snap-mandatory flex flex-col gap-10 z-10 px-5">
-            
-//         </div>
-
-// activeSelection && <div className="absolute w-full h-full top-0 left-0 overflow-y-scroll bg-[rgba(28,28,30,.5)] backdrop-blur">
-//     <div id="selection-area" className="fixed w-full h-16 top-[50vh] -translate-y-1/2 bg-[rgba(255,255,255,.5)] pointer-events-none"></div>
-//     <div className="fixed w-full h-16 bg-white bottom-0"></div>
-//     <div className="text-center">
-//         {props.values.map((value: any) => {
-//             return (
-//                 <div id={value.id} key={value.id} className="w-full snap-center text-2xl whitespace-nowrap overflow-x-clip text-center" onClick={selectIndividualItem}>
-//                     <div className="inline-block">{value.value}</div>
-//                 </div>
-//             )
-//         })}
-//     </div>
-// </div>
