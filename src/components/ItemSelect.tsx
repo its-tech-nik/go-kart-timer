@@ -161,7 +161,7 @@ const ItemSelect = (props: any) => {
     return (
         <div>
             <div onClick={() => setActiveSelection(true)}>
-                {props.name}: {props.value}
+                {props.name}:<br/> {props.value}
             </div>
             {
                 activeSelection &&
@@ -169,17 +169,17 @@ const ItemSelect = (props: any) => {
                     <div className="w-full h-full fixed top-0 left-0 backdrop-blur"></div>
                     <div className="absolute w-full h-full overflow-hidden top-0 left-0 bg-[rgba(28,28,30,.5)]">
                         <div className="w-full h-full">
-                            <div id="selection-area" className="absolute top-[50vh] -translate-y-1/2 w-full h-16 bg-[rgba(255,255,255,.5)] z-10 pointer-events-none">
+                            <div id="selection-area" className="absolute top-[50vh] -translate-y-1/2 w-full h-16 bg-[rgba(255,255,255,.5)] pointer-events-none">
                             </div>
-                            <div className="bg-[rgb(28,28,30)] bottom-0 fixed w-full h-20 z-10 flex justify-evenly items-center">
-                                <button className="w-20 h-16 rounded-lg bg-red-800 flex justify-center items-center" onClick={() => setActiveSelection(false)}>
+                            <div className="bottom-0 right-0 fixed m-4 flex">
+                                <button className="w-24 h-16 rounded-l-full bg-red-800 flex justify-center items-center border border-y-2 border-l-2" onClick={() => setActiveSelection(false)}>
                                     <img src = "./cross.svg" width="34" height="34" alt="My Happy SVG"/>
                                 </button>
-                                <button className="w-20 h-16 rounded-lg bg-green-900 flex justify-center items-center" onClick={() => selectItem(highlightedElement())}>
+                                <button className="w-24 h-16 rounded-r-full bg-green-900 flex justify-center items-center border border-y-2 border-r-2" onClick={() => selectItem(highlightedElement())}>
                                     <img src = "./tick.svg"  width="20" height="20" alt="My Happy SVG"/>
                                 </button>
                             </div>
-                            <div onClick={selectHighlighted} id="options" className="h-full py-[50vh] overflow-y-scroll snap-y snap-proximity snap-mandatory flex flex-col gap-10 z-10 px-5">
+                            <div onClick={selectHighlighted} id="options" className="h-full py-[50vh] overflow-y-scroll snap-y snap-proximity snap-mandatory flex flex-col gap-10 px-5">
                                 {props.values.map((value: any) => {
                                     return (
                                         <div id={value.id} key={value.id} className="w-full snap-center text-2xl whitespace-nowrap overflow-x-clip text-center" onClick={selectIndividualItem}>
