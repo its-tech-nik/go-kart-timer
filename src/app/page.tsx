@@ -210,32 +210,6 @@ const Client = () => {
                 </div>
               )
             })}
-            {topThreeLaps.map(({ time, lap }: any, index: number) => {
-
-              if (time === Infinity) return
-
-              return (
-                <div className="flex font-mono" key={`${index}-${time}`}>
-                  <span className="text-5xl">{ formatTime(time) }</span>
-                  <div className="pl-3 self-end">
-                    <span>L{ lap }</span>
-                  </div>
-                </div>
-              )
-            })}
-            {topThreeLaps.map(({ time, lap }: any, index: number) => {
-
-              if (time === Infinity) return
-
-              return (
-                <div className="flex font-mono" key={`${index}-${time}`}>
-                  <span className="text-5xl">{ formatTime(time) }</span>
-                  <div className="pl-3 self-end">
-                    <span>L{ lap }</span>
-                  </div>
-                </div>
-              )
-            })}
           </div>
         </div>
 
