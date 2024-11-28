@@ -75,7 +75,6 @@ const Client = () => {
   const timer = useTimer({ delay: 10 }, () => {
     const timePassed = timer.getElapsedResumedTime();
     if (timePassed > 59 * 1000) {
-      // console.log(competitors)
       // reInitWebsocketConnection()
       // location.reload()
       timer.start();
@@ -158,7 +157,6 @@ const Client = () => {
   const selectTrack = (selectedTrack: string) => {
     if (track === selectedTrack) return;
 
-    console.log(selectedTrack);
     setTrack(selectedTrack);
     clearDriver();
     history.pushState({}, "", `?track=${selectedTrack}`);
