@@ -26,7 +26,8 @@ body {
     rgb(var(--background-start-rgb));
 }
 
-html, body {
+html,
+body {
   height: 100%;
   overflow: hidden;
   overscroll-behavior: none;
